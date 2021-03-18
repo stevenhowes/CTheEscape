@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include "swis.h"
+#include <kernel.h>
+#include <time.h>
+#include "Sound.h"
+
+// SWI Registers
+_kernel_swi_regs inreg;
+_kernel_swi_regs outreg;
+
+// Sprite buffer
+unsigned char *buffer;
+
+extern struct CompositionElement composition[128];
+
+void intro()
+{
+  int currentstart = 0;
+
+  sound_voices(4);
+
+  sound_set_voice(1,"WaveSynth-Beep");
+  sound_set_voice(2,"WaveSynth-Beep");
+  sound_set_voice(3,"WaveSynth-Beep");
+  sound_set_voice(4,"WaveSynth-Beep");
+  sound_composition_init();
+  
+  // DUn, dun, daan duhhn
+  sound_composition_element_add(currentstart,1,sound_note("A4#"),200);
+  sound_composition_element_add(currentstart,2,sound_note("A5#"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("F3"),200);
+  sound_composition_element_add(currentstart,2,sound_note("F4"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("G3#"),200);
+  sound_composition_element_add(currentstart,2,sound_note("G4#"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("C3"),200);
+  sound_composition_element_add(currentstart,2,sound_note("C4"),200);
+  currentstart += 200;
+
+  // DUn, dun, daan duhhn
+  sound_composition_element_add(currentstart,1,sound_note("A3#"),200);
+  sound_composition_element_add(currentstart,2,sound_note("A4#"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("F2"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,2,sound_note("G2#"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("C2"),200);
+  currentstart += 250;
+
+  // Duh
+  sound_composition_element_add(currentstart,3,sound_note("A3#"),300);
+  sound_composition_element_add(currentstart,4,sound_note("A2#"),300);
+  currentstart += 200;
+
+  //REM Dun De Da
+  sound_composition_element_add(currentstart,1,sound_note("F1"),20);
+  currentstart += 50;
+  sound_composition_element_add(currentstart,2,sound_note("A2#"),5);
+  currentstart += 20;
+  sound_composition_element_add(currentstart,1,sound_note("D2#"),200);
+  currentstart += 180;
+
+
+  sound_composition_element_add(currentstart,2,sound_note("D2"),50);
+  currentstart += 50;
+  sound_composition_element_add(currentstart,1,sound_note("A2#"),30);
+  currentstart += 30;
+  sound_composition_element_add(currentstart,2,sound_note("G1"),50);
+  currentstart += 50;
+  sound_composition_element_add(currentstart,1,sound_note("C2"),50);
+  currentstart += 50;
+  sound_composition_element_add(currentstart,3,sound_note("A2#"),100);
+  sound_composition_element_add(currentstart,4,sound_note("F2"),100);
+  currentstart += 100;
+  
+  draw_sprite("tng",320,400);
+  
+  sound_composition_start(clock());
+  
+  while(sound_composition_incomplete())
+    sound_composition_tick(clock());
+}
+
+int main(int argc, char *argv[])
+{
+  sound_on();
+
+  display_mode(28);
+  load_sprites("Spr");
+
+  intro();
+
+  free(buffer);
+
+  return 0;
+}

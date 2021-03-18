@@ -1,0 +1,143 @@
+#include <stdio.h>
+#include "swis.h"
+#include <kernel.h>
+#include "Sound.h"
+
+// SWI Registers
+extern _kernel_swi_regs inreg;
+extern _kernel_swi_regs outreg;
+
+int current_element = 0;
+int current_playback_element = 0;
+int composition_startcent = -1;
+
+struct CompositionElement composition[COMPOSITION_MAX];
+
+char *notes[] = {"AX","A#","BX","CX","C#","DX","D#","EX","FX","F#","GX","G#"};
+
+void sound_on()
+{
+  inreg.r[0] = 2;
+  _kernel_swi(Sound_Enable,&inreg,&outreg);
+}
+
+void sound_voices(int num)
+{
+  inreg.r[0] = num;
+  inreg.r[1] = 0;
+  inreg.r[2] = 0;
+  inreg.r[3] = 0;
+  inreg.r[4] = 0;
+  _kernel_swi(Sound_Configure,&inreg,&outreg);
+}
+
+void sound_set_voice(int voicenum, char* voicename)
+{
+  inreg.r[0] = voicenum;
+  inreg.r[1] = (int) voicename;
+  _kernel_swi(Sound_AttachNamedVoice,&inreg,&outreg);
+}
+
+void sound_composition_element_play(struct CompositionElement element)
+{
+  inreg.r[0] = element.Channel;
+  inreg.r[1] = element.Volume;
+  inreg.r[2] = element.Note;
+  inreg.r[3] = element.Length;
+  _kernel_swi(Sound_Control,&inreg,&outreg);
+}
+
+void sound_composition_init()
+{
+  int i;
+  for(i = 0; i <= COMPOSITION_MAX; i++)
+  {
+    composition[i].Start = -1;
+  }
+}
+
+void sound_composition_element_add(int start, int channel, int note, int length)
+{
+  composition[current_element].Start = start;
+  composition[current_element].Note = note;
+  composition[current_element].Volume = -10;
+  composition[current_element].Channel = channel;
+  composition[current_element].Length = length;
+  current_element++;
+}
+
+void sound_composition_debug()
+{
+  int i;
+
+  printf("------------------------------\n");
+  
+  for(i = 0; i <= COMPOSITION_MAX; i++)
+  {
+    if(composition[i].Start >= 0)
+    {
+      printf("%5d: %3d %4d %3d %4d\n", 
+        composition[i].Start,
+        composition[i].Note,
+        composition[i].Volume,
+        composition[i].Channel,
+        composition[i].Length
+      );
+    }
+  }
+
+  printf("------------------------------\n");
+}
+
+void sound_composition_start(int cent)
+{
+  composition_startcent = cent;
+}
+
+void sound_composition_tick(int cents)
+{
+  int offset_cents = cents - composition_startcent;
+  int i;
+
+  for(i = current_playback_element; i <= COMPOSITION_MAX; i++)
+  {
+    if(composition[i].Start <= offset_cents)
+    {
+	  if(composition[i].Start >= 0)
+	  {
+        sound_composition_element_play(composition[i]);
+	    current_playback_element = i + 1;
+	  }
+    }
+  }
+}
+
+int sound_note(char* note)
+{
+	int octave = note[1] - 48;
+    char *basenote = "ZZ";
+	int index = 1;
+	int indexi = 0;
+	int len = sizeof(notes)/sizeof(notes[0]);
+	basenote[0] = note[0];
+	if(strlen(note) == 3)
+	{
+		basenote[1] = '#';
+	}else{
+		basenote[1] = 'X';
+	}
+	for(indexi = 0; indexi < len; indexi++)
+	{
+		if(strcmp(notes[indexi],basenote) == 0)
+			index = indexi;
+	}
+	return 41 + (4 * index) + ((octave - 2) * 48);
+}
+
+int sound_composition_incomplete()
+{
+  if(composition[current_playback_element].Start < 0)
+    return 0;
+  else
+    return 1;
+}        
