@@ -4,10 +4,6 @@
 # Toolflags:
 CCflags = -c -depend !Depend -IC: -throwback -w  
 Linkflags = -aif -o $@ 
-#ObjAsmflags = -depend !Depend -Stamp -quit -CloseExec
-#CMHGflags = 
-#LibFileflags = -c -o $@
-#Squeezeflags = -o $@
 
 
 # Final targets:
@@ -21,35 +17,34 @@ Linkflags = -aif -o $@
 # Static dependencies:
 @.o.CTheEscape:   @.c.CTheEscape
         cc $(ccflags) -o @.o.CTheEscape @.c.CTheEscape
-
 @.o.Graphics:   @.c.Graphics
         cc $(ccflags) -o @.o.Graphics @.c.Graphics
-
 @.o.Sound:   @.c.Sound
         cc $(ccflags) -o @.o.Sound @.c.Sound
 
+
 # Dynamic dependencies:
-o.CTheEscape: c.CTheEscape
-o.CTheEscape: C:h.swis
-o.CTheEscape: C:h.kernel
-o.CTheEscape: C:h.kernel
-o.CTheEscape: h.Sound
-o.CTheEscape: c.CTheEscape
-o.CTheEscape: C:h.swis
-o.CTheEscape: C:h.kernel
-o.CTheEscape: C:h.kernel
-o.CTheEscape: h.Sound
-o.Graphics: c.Graphics
-o.Graphics: C:h.swis
-o.Graphics: C:h.kernel
-o.Graphics: C:h.kernel
-o.Sound: c.Sound
-o.Sound: C:h.swis
-o.Sound: C:h.kernel
-o.Sound: C:h.kernel
-o.Sound: h.Sound
-o.Sound: c.Sound
-o.Sound: C:h.swis
-o.Sound: C:h.kernel
-o.Sound: C:h.kernel
-o.Sound: h.Sound
+o.CTheEscape:	c.CTheEscape
+o.CTheEscape:	C:h.swis
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	h.Sound
+o.CTheEscape:	c.CTheEscape
+o.CTheEscape:	C:h.swis
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	h.Sound
+o.Graphics:	c.Graphics
+o.Graphics:	C:h.swis
+o.Graphics:	C:h.kernel
+o.Graphics:	C:h.kernel
+o.Sound:	c.Sound
+o.Sound:	C:h.swis
+o.Sound:	C:h.kernel
+o.Sound:	C:h.kernel
+o.Sound:	h.Sound
+o.Sound:	c.Sound
+o.Sound:	C:h.swis
+o.Sound:	C:h.kernel
+o.Sound:	C:h.kernel
+o.Sound:	h.Sound
