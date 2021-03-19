@@ -26,6 +26,8 @@ extern int current_element;
 enum sprite_e{player_ship, durno_ship,player_shipl,player_shipr};
 char *sprites[] = {"player_ship","durno_ship","player_shipl","player_shipr"};
 
+int font = 0;
+
 struct EntityLocation_s {
   short int X,Y;
 };
@@ -205,9 +207,65 @@ void game_input_tick()
   }
 }
 
+void game_setup_audio()
+{
+  sound_voices(4);
+
+  sound_set_voice(1,"WaveSynth-Beep");
+  sound_set_voice(2,"Percussion-Noise");
+  sound_set_voice(3,"Percussion-Soft");
+  sound_set_voice(4,"Percussion-Noise");
+}
+
+void game_draw_hud()
+{
+  draw_sprite("lcars",4,DISPLAY_Y-180);
+
+inreg.r[0] = font;
+inreg.r[1] = (int)"Shields";
+inreg.r[2] = 1 << 4;
+inreg.r[3] = 75;
+inreg.r[4] = DISPLAY_Y-60;
+inreg.r[5] = 0;
+inreg.r[6] = 0;
+inreg.r[7] = 0;
+_kernel_swi(Font_Paint,&inreg,&outreg);
+
+inreg.r[0] = font;
+inreg.r[1] = (int)"Integrity";
+inreg.r[2] = 1 << 4;
+inreg.r[3] = 75;
+inreg.r[4] = DISPLAY_Y-90;
+inreg.r[5] = 0;
+inreg.r[6] = 0;
+inreg.r[7] = 0;
+_kernel_swi(Font_Paint,&inreg,&outreg);
+
+inreg.r[0] = font;
+inreg.r[1] = (int)"Velocity";
+inreg.r[2] = 1 << 4;
+inreg.r[3] = 75;
+inreg.r[4] = DISPLAY_Y-120;
+inreg.r[5] = 0;
+inreg.r[6] = 0;
+inreg.r[7] = 0;
+_kernel_swi(Font_Paint,&inreg,&outreg);
+
+inreg.r[0] = font;
+inreg.r[1] = (int)"Distance";
+inreg.r[2] = 1 << 4;
+inreg.r[3] = 75;
+inreg.r[4] = DISPLAY_Y-150;
+inreg.r[5] = 0;
+inreg.r[6] = 0;
+inreg.r[7] = 0;
+_kernel_swi(Font_Paint,&inreg,&outreg);
+}
+
 void game_setup()
 {
   game_setup_input();
+  game_setup_audio();
   game_setup_stars();
   game_setup_player();
   tick = clock();
@@ -226,6 +284,8 @@ void game_tick()
   
   game_draw_stars();
   game_draw_player();
+  
+  game_draw_hud();
 }
 
 int main(int argc, char *argv[])
@@ -235,9 +295,24 @@ int main(int argc, char *argv[])
   display_mode(DISPLAY_MODE);
   load_sprites("Spr");
 
-  intro();
+  //intro();
 
   display_mode(DISPLAY_MODE);
+
+inreg.r[0] = 0;
+inreg.r[1] = (int)"System.Medium";
+inreg.r[2] = 12*16;
+inreg.r[3] = 8*16;
+inreg.r[4] = 0;
+inreg.r[5] = 0;
+_kernel_swi(Font_FindFont,&inreg,&outreg);
+
+font = outreg.r[0];
+inreg.r[0] = 0;
+inreg.r[1] = 0xffaaa000; // TODO: Not purple
+inreg.r[2] = 0x11111000;
+inreg.r[3] = 14;
+_kernel_swi(ColourTrans_SetFontColours, &inreg, &outreg);
 
   game_setup();
   
