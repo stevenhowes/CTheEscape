@@ -12,9 +12,9 @@ int input_readkey(int key)
     inreg.r[1] = key ^ 255;
     inreg.r[2] = 255;
     _kernel_swi(OS_Byte,&inreg,&outreg);
-    
+
     if(outreg.r[1] == 255)
       return 1;
-      
+
     return 0;
 }

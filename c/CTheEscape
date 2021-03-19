@@ -19,7 +19,7 @@ extern int current_element;
 #define DISPLAY_Y 960
 
 #define PLAYER_Y_START 100
-
+#define PLAYER_X_SPEED 10
 #define MAX_NPCS 5
 #define MAX_STARS 49
 
@@ -168,22 +168,64 @@ void game_setup_stars()
   }
 }
 
+void game_setup_input()
+{
+  /*
+    inreg.r[0] = 4;
+  inreg.r[1] = 1;
+  _kernel_swi(OS_Byte,&inreg,&outreg);
+  */
+}
+
+void game_input_tick()
+{
+  // Right arrow
+  if(input_readkey(121))
+  {
+    Player.location.X += PLAYER_X_SPEED * (tick - lasttick);
+    Player.sprite = player_shipr;
+    // TODO: SHIP WIDTH
+    if(Player.location.X > DISPLAY_X)
+    {
+      Player.location.X = DISPLAY_X;
+      Player.sprite = player_ship;
+    }
+  }
+
+  // Left arrow
+  if(input_readkey(25))
+  {
+    Player.location.X -= PLAYER_X_SPEED * (tick - lasttick);
+    Player.sprite = player_shipl;
+    if(Player.location.X < 0)
+    {
+      Player.location.X = 0;
+      Player.sprite = player_ship;
+    }
+  }
+}
+
 void game_setup()
 {
+  game_setup_input();
   game_setup_stars();
   game_setup_player();
+  tick = clock();
 }
 
 void game_tick()
 {
   lasttick = tick;
   tick = clock();
+
   screen_flipbuffer();
   screen_clear();
+
   game_tick_stars();
+  game_input_tick();
+  
   game_draw_stars();
   game_draw_player();
-  printf("%i - %i",tick - lasttick,screen);
 }
 
 int main(int argc, char *argv[])
@@ -193,7 +235,7 @@ int main(int argc, char *argv[])
   display_mode(DISPLAY_MODE);
   load_sprites("Spr");
 
-  //intro();
+  intro();
 
   display_mode(DISPLAY_MODE);
 
