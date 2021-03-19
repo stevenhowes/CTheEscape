@@ -1,8 +1,9 @@
 #define COMPOSITION_MAX 128
+
 struct CompositionElement {
-int Start;
-int Note;
-int Volume;
-int Channel;
-int Length;
+  signed short int Start;
+  unsigned char Note;
+  signed char Volume;
+  unsigned char Channel;
+  unsigned short int Length;
 };

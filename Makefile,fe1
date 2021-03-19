@@ -24,16 +24,6 @@ Linkflags = -aif -o $@
 
 
 # Dynamic dependencies:
-o.CTheEscape:	c.CTheEscape
-o.CTheEscape:	C:h.swis
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	h.Sound
-o.CTheEscape:	c.CTheEscape
-o.CTheEscape:	C:h.swis
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	h.Sound
 o.Graphics:	c.Graphics
 o.Graphics:	C:h.swis
 o.Graphics:	C:h.kernel
@@ -43,8 +33,13 @@ o.Sound:	C:h.swis
 o.Sound:	C:h.kernel
 o.Sound:	C:h.kernel
 o.Sound:	h.Sound
-o.Sound:	c.Sound
-o.Sound:	C:h.swis
-o.Sound:	C:h.kernel
-o.Sound:	C:h.kernel
-o.Sound:	h.Sound
+o.CTheEscape:	c.CTheEscape
+o.CTheEscape:	C:h.swis
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	h.Sound
+o.CTheEscape:	c.CTheEscape
+o.CTheEscape:	C:h.swis
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	h.Sound

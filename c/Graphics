@@ -61,7 +61,6 @@ void load_sprites(char* filename)
 
 void display_mode(int mode)
 {
-  // mode 28 80x60 640x480 16 colours
   inreg.r[0] = 0;
   inreg.r[1] = mode;
   _kernel_swi(OS_ScreenMode,&inreg,&outreg);

@@ -12,6 +12,7 @@ _kernel_swi_regs outreg;
 unsigned char *buffer;
 
 extern struct CompositionElement composition[128];
+extern int current_element;
 
 void intro()
 {
@@ -77,7 +78,7 @@ void intro()
   currentstart += 100;
   
   draw_sprite("tng",320,400);
-  
+  printf("%i elements at %i bytes\n",current_element,sizeof(composition[0]));
   sound_composition_start(clock());
   
   while(sound_composition_incomplete())
@@ -87,7 +88,8 @@ void intro()
 int main(int argc, char *argv[])
 {
   sound_on();
-
+  
+  // mode 28 80x60 640x480 16 colours
   display_mode(28);
   load_sprites("Spr");
 
