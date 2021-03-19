@@ -7,8 +7,8 @@ Linkflags = -aif -o $@
 
 
 # Final targets:
-@.!RunImage:   @.o.CTheEscape @.o.Graphics @.o.Sound C:o.stubs 
-        Link $(Linkflags) @.o.CTheEscape @.o.Graphics @.o.Sound C:o.stubs 
+@.!RunImage:   @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input C:o.stubs 
+        Link $(Linkflags) @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input C:o.stubs 
 
 
 # User-editable dependencies:
@@ -21,7 +21,8 @@ Linkflags = -aif -o $@
         cc $(ccflags) -o @.o.Graphics @.c.Graphics
 @.o.Sound:   @.c.Sound
         cc $(ccflags) -o @.o.Sound @.c.Sound
-
+@.o.Input:   @.c.Input
+        cc $(ccflags) -o @.o.Input @.c.Input
 
 # Dynamic dependencies:
 o.Graphics:	c.Graphics
@@ -38,8 +39,11 @@ o.CTheEscape:	C:h.swis
 o.CTheEscape:	C:h.kernel
 o.CTheEscape:	C:h.kernel
 o.CTheEscape:	h.Sound
-o.CTheEscape:	c.CTheEscape
-o.CTheEscape:	C:h.swis
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	C:h.kernel
-o.CTheEscape:	h.Sound
+o.Input:	c.Input
+o.Input:	C:h.swis
+o.Input:	C:h.kernel
+o.Input:	C:h.kernel
+o.Input:	c.Input
+o.Input:	C:h.swis
+o.Input:	C:h.kernel
+o.Input:	C:h.kernel

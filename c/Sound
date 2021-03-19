@@ -85,6 +85,8 @@ void sound_composition_debug()
       );
     }
   }
+  
+  printf("%i elements at %i bytes each\n",current_element,sizeof(composition[0]));
 
   printf("------------------------------\n");
 }
@@ -92,6 +94,11 @@ void sound_composition_debug()
 void sound_composition_start(int cent)
 {
   composition_startcent = cent;
+}
+
+void sound_composition_stop()
+{
+  current_playback_element = COMPOSITION_MAX;
 }
 
 void sound_composition_tick(int cents)
@@ -103,35 +110,35 @@ void sound_composition_tick(int cents)
   {
     if(composition[i].Start <= offset_cents)
     {
-	  if(composition[i].Start >= 0)
-	  {
+      if(composition[i].Start >= 0)
+      {
         sound_composition_element_play(composition[i]);
-	    current_playback_element = i + 1;
-	  }
+        current_playback_element = i + 1;
+      }
     }
   }
 }
 
 int sound_note(char* note)
 {
-	int octave = note[1] - 48;
-    char *basenote = "ZZ";
-	int index = 1;
-	int indexi = 0;
-	int len = sizeof(notes)/sizeof(notes[0]);
-	basenote[0] = note[0];
-	if(strlen(note) == 3)
-	{
-		basenote[1] = '#';
-	}else{
-		basenote[1] = 'X';
-	}
-	for(indexi = 0; indexi < len; indexi++)
-	{
-		if(strcmp(notes[indexi],basenote) == 0)
-			index = indexi;
-	}
-	return 41 + (4 * index) + ((octave - 2) * 48);
+  int octave = note[1] - 48;
+  char *basenote = "ZZ";
+  int index = 1;
+  int indexi = 0;
+  int len = sizeof(notes)/sizeof(notes[0]);
+  basenote[0] = note[0];
+  if(strlen(note) == 3)
+  {
+    basenote[1] = '#';
+  }else{
+    basenote[1] = 'X';
+  }
+  for(indexi = 0; indexi < len; indexi++)
+  {
+    if(strcmp(notes[indexi],basenote) == 0)
+      index = indexi;
+  }
+  return 41 + (4 * index) + ((octave - 2) * 48);
 }
 
 int sound_composition_incomplete()
@@ -140,4 +147,4 @@ int sound_composition_incomplete()
     return 0;
   else
     return 1;
-}        
+}

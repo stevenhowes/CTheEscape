@@ -78,11 +78,15 @@ void intro()
   currentstart += 100;
   
   draw_sprite("tng",320,400);
-  printf("%i elements at %i bytes\n",current_element,sizeof(composition[0]));
   sound_composition_start(clock());
   
   while(sound_composition_incomplete())
+  {
     sound_composition_tick(clock());
+
+    if(input_readkey(98))
+      sound_composition_stop();
+  }
 }
 
 int main(int argc, char *argv[])
