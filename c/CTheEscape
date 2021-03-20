@@ -451,6 +451,9 @@ void game_collider_tick()
       {
         NPCS[i].sprite = explode_shp1;
         NPCS[i].explodenextframe = tick + 4;
+        sound_play(1,-5,0,100);
+        sound_play(3,-15,0,1000);
+        sound_play(2,-10,1,100);
       }
     }
   }

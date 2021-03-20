@@ -38,14 +38,21 @@ void sound_set_voice(int voicenum, char* voicename)
   _kernel_swi(Sound_AttachNamedVoice,&inreg,&outreg);
 }
 
-void sound_composition_element_play(struct CompositionElement element)
+void sound_play(unsigned char Channel, signed char Volume, unsigned char Note, unsigned short int Length)
 {
-  inreg.r[0] = element.Channel;
-  inreg.r[1] = element.Volume;
-  inreg.r[2] = element.Note;
-  inreg.r[3] = element.Length;
+  inreg.r[0] = Channel;
+  inreg.r[1] = Volume;
+  inreg.r[2] = Note;
+  inreg.r[3] = Length;
   _kernel_swi(Sound_Control,&inreg,&outreg);
 }
+
+
+void sound_composition_element_play(struct CompositionElement element)
+{
+  sound_play(element.Channel, element.Volume, element.Note, element.Length);
+}
+
 
 void sound_composition_init()
 {
