@@ -22,9 +22,10 @@ extern int current_element;
 #define PLAYER_X_SPEED 10
 #define MAX_NPCS 5
 #define MAX_STARS 49
+#define MAX_PROJECTILES 10
 
-enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4};
-char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4"};
+enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4,photon1,photon2};
+char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2"};
 
 char hudbuffer[63];
 
@@ -62,7 +63,6 @@ struct Star_s {
   unsigned char length;
 };
 
-
 struct Player_s {
   struct EntityLocation_s location;
   enum sprite_e idlesprite;
@@ -78,8 +78,19 @@ struct Player_s {
   struct EntityLocation_s phaser2;
 };
 
+struct Projectile_s {
+  struct EntityLocation_s location;
+  enum sprite_e sprite;
+  struct EntityLocation_s velocity;
+  int collidable;
+  int nextframe;
+  short int active;
+  int damage;
+};
+
 struct Star_s Stars[MAX_STARS];
 struct NPC_s NPCS[MAX_NPCS];
+struct Projectile_s Projectiles[MAX_PROJECTILES];
 struct Player_s Player;
 
 
@@ -239,6 +250,18 @@ void game_draw_npcs()
         NPCS[i].location.Y + NPCS[i].hitbox_tr.Y
       );
     }
+  }
+}
+
+void game_draw_projectiles()
+{
+  int i;
+  for(i = 0; i < MAX_PROJECTILES; i++)
+  {
+    if(Projectiles[i].active == 0)
+      continue;
+
+    draw_sprite(sprites[Projectiles[i].sprite], Projectiles[i].location.X,Projectiles[i].location.Y);
   }
 }
 
@@ -408,6 +431,15 @@ void game_draw_debugmenu()
     }
   }
 
+  if(0)
+  {
+    font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+    for(i = 0; i < MAX_PROJECTILES; i++)
+    {
+      sprintf(hudbuffer,"Projectiles[%i] %i,%i %i,%i %i",i,Projectiles[i].velocity.X,Projectiles[i].velocity.Y,Projectiles[i].location.X,Projectiles[i].location.Y,Projectiles[i].active);
+      draw_text(hudbuffer,DISPLAY_X-800,DISPLAY_Y-60-(i * 20),font[sys_12_8]);
+    }
+  }
 }
 
 void game_collider_tick()
@@ -470,6 +502,77 @@ int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, 
   return 0;
 }
 
+void game_projectiles_tick()
+{
+  int i;
+  for(i = 0; i < MAX_PROJECTILES; i++)
+  {
+    if(!Projectiles[i].active)
+      continue;
+
+    if(tick > Projectiles[i].nextframe)
+    {
+      if((Projectiles[i].sprite >= photon1) && (Projectiles[i].sprite <= photon2))
+      {
+        Projectiles[i].sprite++;
+        if(Projectiles[i].sprite > photon2)
+          Projectiles[i].sprite = photon1;
+      }
+      Projectiles[i].nextframe = tick + 10;
+    }
+
+
+    Projectiles[i].location.Y -= (tick - lasttick) * Projectiles[i].velocity.Y;
+    Projectiles[i].location.X -= (tick - lasttick) * Projectiles[i].velocity.X;
+
+    if((Projectiles[i].location.Y) <= 0)
+    {
+      Projectiles[i].active = 0;
+    }
+  }
+}
+
+void game_spawn_projectile(int id,int Px,int Py, int Vx,int Vy,enum sprite_e sprite, int damage)
+{
+  int i;
+  
+  if(id < 0)
+  {
+    for(i = 0; i < MAX_PROJECTILES; i++)
+    {
+        if(Projectiles[i].active == 0)
+          id = i;
+    }
+  }
+
+  // If no velocity X specified we're targetting the player
+  if(Vx == 0)
+  {
+    int Xdistance = abs(Player.location.X - Px);
+    int Ydistance = abs(Player.location.Y - Py);
+    int distance = sqrt((Xdistance^2) + (Ydistance^2));
+    Vx = Xdistance / (distance / 10);
+    Vy = Ydistance / (distance / 10);
+    if(Player.location.X > Px)
+      Vx = 0 - Vx;
+  }
+
+  //If no free IDs then we go without
+  if(id >= 0)
+  {
+    Projectiles[id].location.X = Px;
+    Projectiles[id].location.Y = Py;
+    Projectiles[id].velocity.X = Vx;
+    Projectiles[id].velocity.Y = Vy;
+    Projectiles[id].active = 1;
+    Projectiles[id].sprite = sprite;
+    Projectiles[id].nextframe = tick + 10;
+    Projectiles[id].damage = damage;
+    Projectiles[id].collidable = 1;
+  }
+
+}
+
 void game_input_tick()
 {
   if(debugs[dbbase])
@@ -489,6 +592,9 @@ void game_input_tick()
     // 5
     if(input_readkey(19))
       debugs[dbnpcs] = 1;
+    // W
+    if(input_readkey(33))
+      game_spawn_projectile(-1,DISPLAY_X/2,DISPLAY_Y - 200,0,2,photon1,50);
   }
   
   if(debugs[dbinput])
@@ -594,10 +700,13 @@ void game_tick()
   game_tick_player();
   game_tick_npcs();
   game_collider_tick();
+  game_projectiles_tick();
   
   game_draw_stars();
   game_draw_player();
   game_draw_npcs();
+  game_draw_projectiles();
+
   game_draw_hud();
   game_draw_debugmenu();
 }
