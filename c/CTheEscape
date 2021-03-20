@@ -26,7 +26,11 @@ extern int current_element;
 enum sprite_e{player_ship, durno_ship,player_shipl,player_shipr};
 char *sprites[] = {"player_ship","durno_ship","player_shipl","player_shipr"};
 
-int font = 0;
+enum font_e{sys_12_8,font_max};
+
+enum fontcolour_e{lcars_black,lcars_violet1};
+int fontcolours[] = {0x11111000,0xc4727200};
+int font[font_max];
 
 struct EntityLocation_s {
   short int X,Y;
@@ -152,10 +156,10 @@ void game_tick_stars()
   for(i = 0; i <= MAX_STARS; i++)
   {
     Stars[i].Y -= (tick - lasttick) * 2;
-    if(Stars[i].Y <= 0)
+    if((Stars[i].Y + 30) <= 0)
     {
       Stars[i].X = rand() % DISPLAY_X;
-      Stars[i].Y = DISPLAY_Y;
+      Stars[i].Y = DISPLAY_Y + 30;
     }
   }
 }
@@ -221,45 +225,19 @@ void game_draw_hud()
 {
   draw_sprite("lcars",4,DISPLAY_Y-180);
 
-inreg.r[0] = font;
-inreg.r[1] = (int)"Shields";
-inreg.r[2] = 1 << 4;
-inreg.r[3] = 75;
-inreg.r[4] = DISPLAY_Y-60;
-inreg.r[5] = 0;
-inreg.r[6] = 0;
-inreg.r[7] = 0;
-_kernel_swi(Font_Paint,&inreg,&outreg);
+  font_colour(fontcolours[lcars_black],fontcolours[lcars_violet1],font[sys_12_8]);
 
-inreg.r[0] = font;
-inreg.r[1] = (int)"Integrity";
-inreg.r[2] = 1 << 4;
-inreg.r[3] = 75;
-inreg.r[4] = DISPLAY_Y-90;
-inreg.r[5] = 0;
-inreg.r[6] = 0;
-inreg.r[7] = 0;
-_kernel_swi(Font_Paint,&inreg,&outreg);
+  draw_text("Shields",75,DISPLAY_Y-62,font[sys_12_8]);
+  draw_text("Integrity",75,DISPLAY_Y-92,font[sys_12_8]);
+  draw_text("Velocity",75,DISPLAY_Y-122,font[sys_12_8]);
+  draw_text("Distance",75,DISPLAY_Y-152,font[sys_12_8]);
+  
+  font_colour(fontcolours[lcars_violet1],fontcolours[lcars_black],font[sys_12_8]);
 
-inreg.r[0] = font;
-inreg.r[1] = (int)"Velocity";
-inreg.r[2] = 1 << 4;
-inreg.r[3] = 75;
-inreg.r[4] = DISPLAY_Y-120;
-inreg.r[5] = 0;
-inreg.r[6] = 0;
-inreg.r[7] = 0;
-_kernel_swi(Font_Paint,&inreg,&outreg);
-
-inreg.r[0] = font;
-inreg.r[1] = (int)"Distance";
-inreg.r[2] = 1 << 4;
-inreg.r[3] = 75;
-inreg.r[4] = DISPLAY_Y-150;
-inreg.r[5] = 0;
-inreg.r[6] = 0;
-inreg.r[7] = 0;
-_kernel_swi(Font_Paint,&inreg,&outreg);
+  draw_text("Shields",230,DISPLAY_Y-62,font[sys_12_8]);
+  draw_text("Integrity",230,DISPLAY_Y-92,font[sys_12_8]);
+  draw_text("Velocity",230,DISPLAY_Y-122,font[sys_12_8]);
+  draw_text("Distance",230,DISPLAY_Y-152,font[sys_12_8]);
 }
 
 void game_setup()
@@ -299,20 +277,7 @@ int main(int argc, char *argv[])
 
   display_mode(DISPLAY_MODE);
 
-inreg.r[0] = 0;
-inreg.r[1] = (int)"System.Medium";
-inreg.r[2] = 12*16;
-inreg.r[3] = 8*16;
-inreg.r[4] = 0;
-inreg.r[5] = 0;
-_kernel_swi(Font_FindFont,&inreg,&outreg);
-
-font = outreg.r[0];
-inreg.r[0] = 0;
-inreg.r[1] = 0xffaaa000; // TODO: Not purple
-inreg.r[2] = 0x11111000;
-inreg.r[3] = 14;
-_kernel_swi(ColourTrans_SetFontColours, &inreg, &outreg);
+  font[sys_12_8] = font_find("System.Medium",12,8);
 
   game_setup();
   

@@ -89,6 +89,41 @@ void draw_sprite(char* spritename,int x, int y)
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
 
+void draw_text(char* text, int x, int y, int fonthandle)
+{
+  inreg.r[0] = fonthandle;
+  inreg.r[1] = (int) text;
+  inreg.r[2] = 1 << 4;
+  inreg.r[3] = x;
+  inreg.r[4] = y;
+  inreg.r[5] = 0;
+  inreg.r[6] = 0;
+  inreg.r[7] = 0;
+  _kernel_swi(Font_Paint,&inreg,&outreg);
+}
+
+int font_find(char* font, int height, int width)
+{
+  inreg.r[0] = 0;
+  inreg.r[1] = (int) font;
+  inreg.r[2] = height*16;
+  inreg.r[3] = width*16;
+  inreg.r[4] = 0;
+  inreg.r[5] = 0;
+  _kernel_swi(Font_FindFont,&inreg,&outreg);
+
+  return outreg.r[0];
+}
+
+void font_colour(int fg, int bg, int fonthandle)
+{
+  inreg.r[0] = fonthandle;
+  inreg.r[1] = bg;
+  inreg.r[2] = fg;
+  inreg.r[3] = 14;
+  _kernel_swi(ColourTrans_SetFontColours, &inreg, &outreg);
+}
+
 void screen_flipbuffer()
 {
    inreg.r[0] = 19;
