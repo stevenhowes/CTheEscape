@@ -26,6 +26,8 @@ extern int current_element;
 enum sprite_e{player_ship, durno_ship,player_shipl,player_shipr};
 char *sprites[] = {"player_ship","durno_ship","player_shipl","player_shipr"};
 
+char hudbuffer[63];
+
 enum font_e{sys_12_8,font_max};
 
 enum fontcolour_e{lcars_black,lcars_violet1};
@@ -46,6 +48,9 @@ struct Player_s {
   struct EntityLocation_s location;
   enum sprite_e sprite;
   unsigned char velocity;
+  int shields;
+  int integrity;
+  int remainingdistance;
 };
 
 struct NPC_s NPCS[MAX_NPCS];
@@ -148,6 +153,10 @@ void game_setup_player()
   Player.location.X = DISPLAY_X/2;
   Player.location.Y = PLAYER_Y_START;
   Player.sprite = player_ship;
+  Player.velocity = 100;
+  Player.shields = 100;
+  Player.integrity = 50;
+  Player.remainingdistance = 1500000;
 }
 
 void game_tick_stars()
@@ -234,10 +243,17 @@ void game_draw_hud()
   
   font_colour(fontcolours[lcars_violet1],fontcolours[lcars_black],font[sys_12_8]);
 
-  draw_text("Shields",230,DISPLAY_Y-62,font[sys_12_8]);
-  draw_text("Integrity",230,DISPLAY_Y-92,font[sys_12_8]);
-  draw_text("Velocity",230,DISPLAY_Y-122,font[sys_12_8]);
-  draw_text("Distance",230,DISPLAY_Y-152,font[sys_12_8]);
+  sprintf(hudbuffer,"%i",Player.shields);
+  draw_text(hudbuffer,230,DISPLAY_Y-62,font[sys_12_8]);
+  
+  sprintf(hudbuffer,"%i",Player.integrity);
+  draw_text(hudbuffer,230,DISPLAY_Y-92,font[sys_12_8]);
+
+  sprintf(hudbuffer,"%i",Player.velocity);
+  draw_text(hudbuffer,230,DISPLAY_Y-122,font[sys_12_8]);
+
+  sprintf(hudbuffer,"%i",Player.remainingdistance/1000);
+  draw_text(hudbuffer,230,DISPLAY_Y-152,font[sys_12_8]);
 }
 
 void game_setup()
@@ -247,6 +263,11 @@ void game_setup()
   game_setup_stars();
   game_setup_player();
   tick = clock();
+}
+
+void game_tick_player()
+{
+  Player.remainingdistance -= Player.velocity * (tick - lasttick);
 }
 
 void game_tick()
@@ -259,10 +280,11 @@ void game_tick()
 
   game_tick_stars();
   game_input_tick();
-  
+  game_tick_player();
+
   game_draw_stars();
   game_draw_player();
-  
+
   game_draw_hud();
 }
 
