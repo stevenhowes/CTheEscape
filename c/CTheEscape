@@ -30,8 +30,8 @@ char hudbuffer[63];
 
 enum font_e{sys_12_8,font_max};
 
-enum fontcolour_e{lcars_black,lcars_violet1};
-int fontcolours[] = {0x11111000,0xc4727200};
+enum colour_e{lcars_black,lcars_violet1,hotpink,stargrey1,stargrey2,stargrey3};
+int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400};
 int font[font_max];
 
 struct EntityLocation_s {
@@ -44,6 +44,13 @@ struct NPC_s {
   unsigned char velocity;
 };
 
+struct Star_s {
+  struct EntityLocation_s location;
+  int colour;
+  unsigned char length;
+};
+
+
 struct Player_s {
   struct EntityLocation_s location;
   enum sprite_e sprite;
@@ -51,11 +58,13 @@ struct Player_s {
   int shields;
   int integrity;
   int remainingdistance;
+  struct EntityLocation_s hitbox_bl;
+  struct EntityLocation_s hitbox_tr;
 };
 
 struct NPC_s NPCS[MAX_NPCS];
 struct Player_s Player;
-struct EntityLocation_s Stars[MAX_STARS];
+struct Star_s Stars[MAX_STARS];
 
 int tick = 0;
 int lasttick = 0;
@@ -138,13 +147,27 @@ void intro()
 void game_draw_player()
 {
   draw_sprite(sprites[Player.sprite], Player.location.X, Player.location.Y);
+
+  graphics_colour(colours[hotpink]);
+
+  // Bounding box debug
+  draw_rectangle(
+    Player.location.X + Player.hitbox_bl.X,
+    Player.location.Y + Player.hitbox_bl.Y,
+    Player.location.X + Player.hitbox_tr.X,
+    Player.location.Y + Player.hitbox_tr.Y
+  );
 }
 void game_draw_stars()
 {
   unsigned char i;
+
+
+
   for(i = 0; i <= MAX_STARS; i++)
   {
-    draw_line(Stars[i].X,Stars[i].Y,Stars[i].X,Stars[i].Y+30);
+    graphics_colour(Stars[i].colour);
+    draw_line(Stars[i].location.X,Stars[i].location.Y,Stars[i].location.X,Stars[i].location.Y+Stars[i].length);
   }
 }
 
@@ -157,6 +180,10 @@ void game_setup_player()
   Player.shields = 100;
   Player.integrity = 50;
   Player.remainingdistance = 1500000;
+  Player.hitbox_bl.X = 0;
+  Player.hitbox_bl.Y = 0;
+  Player.hitbox_tr.X = 60;
+  Player.hitbox_tr.Y = 81;
 }
 
 void game_tick_stars()
@@ -164,11 +191,13 @@ void game_tick_stars()
   unsigned char i;
   for(i = 0; i <= MAX_STARS; i++)
   {
-    Stars[i].Y -= (tick - lasttick) * 2;
-    if((Stars[i].Y + 30) <= 0)
+    Stars[i].location.Y -= (tick - lasttick) * 2;
+    if((Stars[i].location.Y + Stars[i].length) <= 0)
     {
-      Stars[i].X = rand() % DISPLAY_X;
-      Stars[i].Y = DISPLAY_Y + 30;
+      Stars[i].colour = colours[stargrey1 + (rand() % 2)];
+      Stars[i].length = 30 + (rand() % 10);
+      Stars[i].location.X = rand() % DISPLAY_X;
+      Stars[i].location.Y = DISPLAY_Y + Stars[i].length;
     }
   }
 }
@@ -178,8 +207,10 @@ void game_setup_stars()
   unsigned char i;
   for(i = 0; i <= MAX_STARS; i++)
   {
-    Stars[i].X = rand() % DISPLAY_X;
-    Stars[i].Y = rand() % DISPLAY_Y;
+    Stars[i].colour = colours[stargrey1 + (rand() % 2)];
+    Stars[i].length = 30 + (rand() % 10);
+    Stars[i].location.X = rand() % DISPLAY_X;
+    Stars[i].location.Y = rand() % DISPLAY_Y;
   }
 }
 
@@ -234,14 +265,14 @@ void game_draw_hud()
 {
   draw_sprite("lcars",4,DISPLAY_Y-180);
 
-  font_colour(fontcolours[lcars_black],fontcolours[lcars_violet1],font[sys_12_8]);
+  font_colour(colours[lcars_black],colours[lcars_violet1],font[sys_12_8]);
 
   draw_text("Shields",75,DISPLAY_Y-62,font[sys_12_8]);
   draw_text("Integrity",75,DISPLAY_Y-92,font[sys_12_8]);
   draw_text("Velocity",75,DISPLAY_Y-122,font[sys_12_8]);
   draw_text("Distance",75,DISPLAY_Y-152,font[sys_12_8]);
   
-  font_colour(fontcolours[lcars_violet1],fontcolours[lcars_black],font[sys_12_8]);
+  font_colour(colours[lcars_violet1],colours[lcars_black],font[sys_12_8]);
 
   sprintf(hudbuffer,"%i",Player.shields);
   draw_text(hudbuffer,230,DISPLAY_Y-62,font[sys_12_8]);

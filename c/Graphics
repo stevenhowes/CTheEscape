@@ -77,6 +77,15 @@ void draw_line(int x1,int y1,int x2,int y2)
   inreg.r[2] = y2;
   _kernel_swi(OS_Plot,&inreg,&outreg);
 }
+
+void draw_rectangle(int x1,int y1,int x2,int y2)
+{
+  draw_line(x1,y1,x1,y2);
+  draw_line(x1,y1,x2,y1);
+  draw_line(x2,y2,x2,y1);
+  draw_line(x2,y2,x1,y2);
+}
+
 void draw_sprite(char* spritename,int x, int y)
 {
   // SpriteOp 34 to put sprite at a location
@@ -124,6 +133,16 @@ void font_colour(int fg, int bg, int fonthandle)
   _kernel_swi(ColourTrans_SetFontColours, &inreg, &outreg);
 }
 
+void graphics_colour(int setcolour)
+{
+  inreg.r[0] = setcolour;
+  inreg.r[1] = -1;
+  inreg.r[2] = 0;
+  _kernel_swi(ColourTrans_ReturnColourNumberForMode,&inreg,&outreg);
+  inreg.r[0] = 0;
+  inreg.r[1] = outreg.r[0];
+  _kernel_swi(OS_SetColour,&inreg,&outreg);
+}
 void screen_flipbuffer()
 {
    inreg.r[0] = 19;
