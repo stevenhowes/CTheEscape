@@ -231,9 +231,9 @@ void game_input_tick()
     Player.location.X += PLAYER_X_SPEED * (tick - lasttick);
     Player.sprite = player_shipr;
     // TODO: SHIP WIDTH
-    if(Player.location.X > DISPLAY_X)
+    if((Player.location.X + Player.hitbox_tr.X) > DISPLAY_X)
     {
-      Player.location.X = DISPLAY_X;
+      Player.location.X = DISPLAY_X - Player.hitbox_tr.X;
       Player.sprite = player_ship;
     }
   }
@@ -243,9 +243,9 @@ void game_input_tick()
   {
     Player.location.X -= PLAYER_X_SPEED * (tick - lasttick);
     Player.sprite = player_shipl;
-    if(Player.location.X < 0)
+    if((Player.location.X + Player.hitbox_bl.X) < 0)
     {
-      Player.location.X = 0;
+      Player.location.X = 0 - Player.hitbox_bl.X;
       Player.sprite = player_ship;
     }
   }
