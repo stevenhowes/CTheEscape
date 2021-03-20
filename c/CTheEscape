@@ -23,8 +23,8 @@ extern int current_element;
 #define MAX_NPCS 5
 #define MAX_STARS 49
 
-enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr};
-char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr"};
+enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4};
+char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4"};
 
 char hudbuffer[63];
 
@@ -51,6 +51,9 @@ struct NPC_s {
   int health;
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
+  int collideforce;
+  int collidable;
+  int explodenextframe;
 };
 
 struct Star_s {
@@ -213,7 +216,17 @@ void game_draw_npcs()
   for(i = 0; i < MAX_NPCS; i++)
   {
     draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
-
+    if(tick > NPCS[i].explodenextframe)
+    {
+      if((NPCS[i].sprite >= explode_shp1) && (NPCS[i].sprite <= explode_shp4))
+      {
+        NPCS[i].sprite++;
+        if(NPCS[i].sprite > explode_shp4)
+          NPCS[i].sprite = explode_shp1;
+      }
+      NPCS[i].explodenextframe = tick + 4;
+    }
+    
     if(debugs[dbhitbox])
     {
       graphics_colour(colours[debugpink]);
@@ -303,7 +316,7 @@ void game_respawn_npc(int id)
   NPCS[id].location.X = rand() % DISPLAY_X;
   NPCS[id].location.Y = DISPLAY_Y + (rand() % (DISPLAY_Y/2));
   NPCS[id].npctype = rand() % (maxnpctype);
-
+  NPCS[id].collidable = 1;
     switch(NPCS[id].npctype)
     {
       case bigdurno:
@@ -315,6 +328,7 @@ void game_respawn_npc(int id)
         NPCS[id].hitbox_bl.Y = 0;
         NPCS[id].hitbox_tr.X = 48;
         NPCS[id].hitbox_tr.Y = 74;
+        NPCS[id].collideforce = 1000;
         break;
       case littledurno:
         NPCS[id].sprite = durno_ship2;
@@ -325,6 +339,7 @@ void game_respawn_npc(int id)
         NPCS[id].hitbox_bl.Y = 0;
         NPCS[id].hitbox_tr.X = 38;
         NPCS[id].hitbox_tr.Y = 56;
+        NPCS[id].collideforce = 30;
         break;
     };
 }
@@ -400,6 +415,8 @@ void game_collider_tick()
   int i;
   for(i = 0; i < MAX_NPCS; i++)
   {
+    if(!NPCS[i].collidable)
+      continue;
     // Excuse this formatting
     if(
       game_hitbox_collide(
@@ -410,11 +427,30 @@ void game_collider_tick()
       )
     )
     {
+
       if(debugs[dbhitbox])
       {
         font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
         sprintf(hudbuffer,"NPCS[%i] hits player",i,NPCS[i].location.X,NPCS[i].location.Y);
         draw_text(hudbuffer,DISPLAY_X-900,DISPLAY_Y-260-(i * 20),font[sys_12_8]);
+      }
+
+      NPCS[i].health -= 300;
+      NPCS[i].collidable = 0;
+      NPCS[i].velocity.Y = NPCS[i].velocity.Y / 2;
+      NPCS[i].velocity.X = NPCS[i].velocity.X * 4;
+
+      Player.shields -= NPCS[i].collideforce;
+      if(Player.shields < 0)
+      {
+        Player.integrity += Player.shields;
+        Player.shields = 0;
+      }
+ 
+      if(NPCS[i].health <= 0)
+      {
+        NPCS[i].sprite = explode_shp1;
+        NPCS[i].explodenextframe = tick + 4;
       }
     }
   }
@@ -578,8 +614,11 @@ int main(int argc, char *argv[])
 
   game_setup();
   
-  while(1)
+  while(Player.integrity > 0)
     game_tick();
+
+  printf("you ded\n");
+
   free(buffer);
 
   return 0;

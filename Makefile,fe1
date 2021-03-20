@@ -51,3 +51,8 @@ o.CTheEscape:	C:h.swis
 o.CTheEscape:	C:h.kernel
 o.CTheEscape:	C:h.kernel
 o.CTheEscape:	h.Sound
+o.CTheEscape:	c.CTheEscape
+o.CTheEscape:	C:h.swis
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	C:h.kernel
+o.CTheEscape:	h.Sound
