@@ -56,8 +56,10 @@ struct Star_s {
 
 struct Player_s {
   struct EntityLocation_s location;
+  enum sprite_e idlesprite;
   enum sprite_e sprite;
   unsigned char velocity;
+  int nextidlesprite;
   int shields;
   int integrity;
   int remainingdistance;
@@ -215,6 +217,7 @@ void game_setup_player()
   Player.location.X = DISPLAY_X/2;
   Player.location.Y = PLAYER_Y_START;
   Player.sprite = player_ship;
+  Player.idlesprite = player_ship;
   Player.velocity = 100;
   Player.shields = 100;
   Player.integrity = 50;
@@ -314,16 +317,19 @@ void game_input_tick()
     debugs[dbbase] = 1;
   }
 
+  if(tick > Player.nextidlesprite)
+    Player.sprite = Player.idlesprite;
+
   // Right arrow
   if(input_readkey(121))
   {
     Player.location.X += PLAYER_X_SPEED * (tick - lasttick);
     Player.sprite = player_shipr;
+    Player.nextidlesprite = tick + 15;
     // TODO: SHIP WIDTH
     if((Player.location.X + Player.hitbox_tr.X) > DISPLAY_X)
     {
       Player.location.X = DISPLAY_X - Player.hitbox_tr.X;
-      Player.sprite = player_ship;
     }
   }
 
@@ -332,10 +338,10 @@ void game_input_tick()
   {
     Player.location.X -= PLAYER_X_SPEED * (tick - lasttick);
     Player.sprite = player_shipl;
+    Player.nextidlesprite = tick + 15;
     if((Player.location.X + Player.hitbox_bl.X) < 0)
     {
       Player.location.X = 0 - Player.hitbox_bl.X;
-      Player.sprite = player_ship;
     }
   }
 }
