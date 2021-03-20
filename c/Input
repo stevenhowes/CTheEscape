@@ -18,3 +18,13 @@ int input_readkey(int key)
 
     return 0;
 }
+
+int input_readanykey()
+{
+    inreg.r[0] = 129;
+    inreg.r[1] = 123 + 255;
+    inreg.r[2] = 255;
+    _kernel_swi(OS_Byte,&inreg,&outreg);
+
+    return outreg.r[1];
+}

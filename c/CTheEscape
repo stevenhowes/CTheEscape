@@ -30,9 +30,12 @@ char hudbuffer[63];
 
 enum font_e{sys_12_8,font_max};
 
-enum colour_e{lcars_black,lcars_violet1,hotpink,stargrey1,stargrey2,stargrey3};
-int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400};
+enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey1,stargrey2,stargrey3,debuggreen};
+int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400,0x00ff0000};
 int font[font_max];
+
+enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbmax};
+int debugs[dbmax];
 
 struct EntityLocation_s {
   short int X,Y;
@@ -60,6 +63,8 @@ struct Player_s {
   int remainingdistance;
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
+  struct EntityLocation_s phaser1;
+  struct EntityLocation_s phaser2;
 };
 
 struct NPC_s NPCS[MAX_NPCS];
@@ -148,15 +153,49 @@ void game_draw_player()
 {
   draw_sprite(sprites[Player.sprite], Player.location.X, Player.location.Y);
 
-  graphics_colour(colours[hotpink]);
+  if(debugs[dbhitbox])
+  {
+    graphics_colour(colours[debugpink]);
 
-  // Bounding box debug
-  draw_rectangle(
-    Player.location.X + Player.hitbox_bl.X,
-    Player.location.Y + Player.hitbox_bl.Y,
-    Player.location.X + Player.hitbox_tr.X,
-    Player.location.Y + Player.hitbox_tr.Y
-  );
+    // Bounding box debug
+    draw_rectangle(
+      Player.location.X + Player.hitbox_bl.X,
+      Player.location.Y + Player.hitbox_bl.Y,
+      Player.location.X + Player.hitbox_tr.X,
+      Player.location.Y + Player.hitbox_tr.Y
+    );
+  }
+
+  if(debugs[dbweapons])
+  {
+    graphics_colour(colours[debuggreen]);
+
+    // Draw phaser banks
+    draw_line(
+      Player.location.X + Player.phaser1.X,
+      Player.location.Y + Player.phaser1.Y -5,
+      Player.location.X + Player.phaser1.X,
+      Player.location.Y + Player.phaser1.Y + 5
+    );
+    draw_line(
+      Player.location.X + Player.phaser1.X -5,
+      Player.location.Y + Player.phaser1.Y,
+      Player.location.X + Player.phaser1.X +5,
+      Player.location.Y + Player.phaser1.Y 
+    );
+    draw_line(
+      Player.location.X + Player.phaser2.X,
+      Player.location.Y + Player.phaser2.Y -5,
+      Player.location.X + Player.phaser2.X,
+      Player.location.Y + Player.phaser2.Y + 5
+    );
+    draw_line(
+      Player.location.X + Player.phaser2.X -5,
+      Player.location.Y + Player.phaser2.Y,
+      Player.location.X + Player.phaser2.X +5,
+      Player.location.Y + Player.phaser2.Y 
+    );
+  }
 }
 void game_draw_stars()
 {
@@ -184,6 +223,11 @@ void game_setup_player()
   Player.hitbox_bl.Y = 0;
   Player.hitbox_tr.X = 60;
   Player.hitbox_tr.Y = 81;
+  Player.phaser1.X = 20;
+  Player.phaser1.Y = 75;
+  Player.phaser2.X = 41;
+  Player.phaser2.Y = 75;
+
 }
 
 void game_tick_stars()
@@ -223,8 +267,53 @@ void game_setup_input()
   */
 }
 
+void game_draw_debugmenu()
+{
+  if(debugs[dbbase])
+  {
+    font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+    draw_text("Debug List",DISPLAY_X-200,DISPLAY_Y-40,font[sys_12_8]);
+    font_colour(colours[debugs[dbhitbox]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("1: hitbox",DISPLAY_X-200,DISPLAY_Y-60,font[sys_12_8]);
+    font_colour(colours[debugs[dbweapons]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("2: weapons",DISPLAY_X-200,DISPLAY_Y-80,font[sys_12_8]);
+    font_colour(colours[debugs[dbinput]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("3: input",DISPLAY_X-200,DISPLAY_Y-100,font[sys_12_8]);
+  }
+}
+
 void game_input_tick()
 {
+  if(debugs[dbbase])
+  {
+    if(input_readkey(17))
+    {
+      debugs[dbinput] = 1;
+    }
+
+    if(input_readkey(48))
+    {
+      debugs[dbhitbox] = 1;
+    }
+
+    if(input_readkey(49))
+    {
+      debugs[dbweapons] = 1;
+    }
+  }
+  
+  if(debugs[dbinput])
+  {
+    font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+    sprintf(hudbuffer,"Keycode: %i",input_readanykey());
+    draw_text(hudbuffer,DISPLAY_X-500,DISPLAY_Y-40,font[sys_12_8]);
+  }
+
+  if(input_readkey(16))
+  {
+    debugs[dbbase] = 1;
+  }
+
   // Right arrow
   if(input_readkey(121))
   {
@@ -317,6 +406,7 @@ void game_tick()
   game_draw_player();
 
   game_draw_hud();
+  game_draw_debugmenu();
 }
 
 int main(int argc, char *argv[])
