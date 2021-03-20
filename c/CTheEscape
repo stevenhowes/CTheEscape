@@ -23,8 +23,8 @@ extern int current_element;
 #define MAX_NPCS 5
 #define MAX_STARS 49
 
-enum sprite_e{player_ship, durno_ship,player_shipl,player_shipr};
-char *sprites[] = {"player_ship","durno_ship","player_shipl","player_shipr"};
+enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr};
+char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr"};
 
 char hudbuffer[63];
 
@@ -34,17 +34,23 @@ enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey1,stargrey2,stargrey3,
 int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400,0x00ff0000};
 int font[font_max];
 
-enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbmax};
+enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbmax};
 int debugs[dbmax];
 
 struct EntityLocation_s {
-  short int X,Y;
+  short signed int X,Y;
 };
+
+enum npctype_e{bigdurno, littledurno,maxnpctype};
 
 struct NPC_s {
   struct EntityLocation_s location;
   enum sprite_e sprite;
-  unsigned char velocity;
+  enum npctype_e npctype;
+  struct EntityLocation_s velocity;
+  int health;
+  struct EntityLocation_s hitbox_bl;
+  struct EntityLocation_s hitbox_tr;
 };
 
 struct Star_s {
@@ -69,9 +75,10 @@ struct Player_s {
   struct EntityLocation_s phaser2;
 };
 
+struct Star_s Stars[MAX_STARS];
 struct NPC_s NPCS[MAX_NPCS];
 struct Player_s Player;
-struct Star_s Stars[MAX_STARS];
+
 
 int tick = 0;
 int lasttick = 0;
@@ -199,13 +206,34 @@ void game_draw_player()
     );
   }
 }
+
+void game_draw_npcs()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
+
+    if(debugs[dbhitbox])
+    {
+      graphics_colour(colours[debugpink]);
+
+      // Bounding box debug
+      draw_rectangle(
+        NPCS[i].location.X + NPCS[i].hitbox_bl.X,
+        NPCS[i].location.Y + NPCS[i].hitbox_bl.Y,
+        NPCS[i].location.X + NPCS[i].hitbox_tr.X,
+        NPCS[i].location.Y + NPCS[i].hitbox_tr.Y
+      );
+    }
+  }
+}
+
 void game_draw_stars()
 {
   unsigned char i;
-
-
-
-  for(i = 0; i <= MAX_STARS; i++)
+  
+  for(i = 0; i < MAX_STARS; i++)
   {
     graphics_colour(Stars[i].colour);
     draw_line(Stars[i].location.X,Stars[i].location.Y,Stars[i].location.X,Stars[i].location.Y+Stars[i].length);
@@ -220,7 +248,7 @@ void game_setup_player()
   Player.idlesprite = player_ship;
   Player.velocity = 100;
   Player.shields = 100;
-  Player.integrity = 50;
+  Player.integrity = 100;
   Player.remainingdistance = 1500000;
   Player.hitbox_bl.X = 0;
   Player.hitbox_bl.Y = 0;
@@ -235,14 +263,14 @@ void game_setup_player()
 
 void game_tick_stars()
 {
-  unsigned char i;
-  for(i = 0; i <= MAX_STARS; i++)
+  int i;
+  for(i = 0; i < MAX_STARS; i++)
   {
-    Stars[i].location.Y -= (tick - lasttick) * 2;
+    Stars[i].location.Y -= (tick - lasttick) * 4;
     if((Stars[i].location.Y + Stars[i].length) <= 0)
     {
       Stars[i].colour = colours[stargrey1 + (rand() % 2)];
-      Stars[i].length = 30 + (rand() % 10);
+      Stars[i].length = 20 + (rand() % 10);
       Stars[i].location.X = rand() % DISPLAY_X;
       Stars[i].location.Y = DISPLAY_Y + Stars[i].length;
     }
@@ -251,11 +279,11 @@ void game_tick_stars()
 
 void game_setup_stars()
 {
-  unsigned char i;
-  for(i = 0; i <= MAX_STARS; i++)
+  int i;
+  for(i = 0; i < MAX_STARS; i++)
   {
     Stars[i].colour = colours[stargrey1 + (rand() % 2)];
-    Stars[i].length = 30 + (rand() % 10);
+    Stars[i].length = 20 + (rand() % 10);
     Stars[i].location.X = rand() % DISPLAY_X;
     Stars[i].location.Y = rand() % DISPLAY_Y;
   }
@@ -270,8 +298,68 @@ void game_setup_input()
   */
 }
 
+void game_respawn_npc(int id)
+{
+  NPCS[id].location.X = rand() % DISPLAY_X;
+  NPCS[id].location.Y = DISPLAY_Y + (rand() % (DISPLAY_Y/2));
+  NPCS[id].npctype = rand() % (maxnpctype);
+
+    switch(NPCS[id].npctype)
+    {
+      case bigdurno:
+        NPCS[id].sprite = durno_ship;
+        NPCS[id].velocity.X = 0;
+        NPCS[id].velocity.Y = (rand() % 3) + 1;
+        NPCS[id].health = 1000;
+        NPCS[id].hitbox_bl.X = 0;
+        NPCS[id].hitbox_bl.Y = 0;
+        NPCS[id].hitbox_tr.X = 48;
+        NPCS[id].hitbox_tr.Y = 74;
+        break;
+      case littledurno:
+        NPCS[id].sprite = durno_ship2;
+        NPCS[id].velocity.X = (rand() % 3) - 1;
+        NPCS[id].velocity.Y = (rand() % 2) + 6;
+        NPCS[id].health = 30;
+        NPCS[id].hitbox_bl.X = 0;
+        NPCS[id].hitbox_bl.Y = 0;
+        NPCS[id].hitbox_tr.X = 38;
+        NPCS[id].hitbox_tr.Y = 56;
+        break;
+    };
+}
+
+void game_setup_npcs()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    game_respawn_npc(i);
+  }
+}
+
+void game_tick_npcs()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    NPCS[i].location.Y -= (tick - lasttick) * NPCS[i].velocity.Y;
+    NPCS[i].location.X -= (tick - lasttick) * NPCS[i].velocity.X;
+
+    if(NPCS[i].location.Y + NPCS[i].hitbox_tr.Y <= 0)
+      game_respawn_npc(i);
+    
+    if((NPCS[i].location.X + NPCS[i].hitbox_tr.X) > DISPLAY_X)
+      game_respawn_npc(i);
+    
+    if((NPCS[i].location.X + NPCS[i].hitbox_bl.X) < 0)
+      game_respawn_npc(i);
+  }
+}
+
 void game_draw_debugmenu()
 {
+  int i;
   if(debugs[dbbase])
   {
     font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
@@ -282,27 +370,50 @@ void game_draw_debugmenu()
     draw_text("2: weapons",DISPLAY_X-200,DISPLAY_Y-80,font[sys_12_8]);
     font_colour(colours[debugs[dbinput]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
     draw_text("3: input",DISPLAY_X-200,DISPLAY_Y-100,font[sys_12_8]);
+    font_colour(colours[debugs[dbperformance]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("4: performance",DISPLAY_X-200,DISPLAY_Y-120,font[sys_12_8]);
+    font_colour(colours[debugs[dbnpcs]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("5: NPCs",DISPLAY_X-200,DISPLAY_Y-140,font[sys_12_8]);
   }
+
+  if(debugs[dbperformance])
+  {
+    font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+    sprintf(hudbuffer,"Cents per frame: %i",(tick-lasttick));
+    draw_text(hudbuffer,DISPLAY_X-500,DISPLAY_Y-60,font[sys_12_8]);
+  }
+
+  if(debugs[dbnpcs])
+  {
+    font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+    for(i = 0; i < MAX_NPCS; i++)
+    {
+      sprintf(hudbuffer,"NPCS[%i] %i,%i %i,%i %i",i,NPCS[i].velocity.X,NPCS[i].velocity.Y,NPCS[i].location.X,NPCS[i].location.Y);
+      draw_text(hudbuffer,DISPLAY_X-800,DISPLAY_Y-60-(i * 20),font[sys_12_8]);
+    }
+  }
+
 }
 
 void game_input_tick()
 {
   if(debugs[dbbase])
   {
+    // 1
     if(input_readkey(17))
-    {
       debugs[dbinput] = 1;
-    }
-
+    // 2
     if(input_readkey(48))
-    {
       debugs[dbhitbox] = 1;
-    }
-
+    // 3
     if(input_readkey(49))
-    {
       debugs[dbweapons] = 1;
-    }
+    // 4
+    if(input_readkey(18))
+      debugs[dbperformance] = 1;
+    // 5
+    if(input_readkey(19))
+      debugs[dbnpcs] = 1;
   }
   
   if(debugs[dbinput])
@@ -312,10 +423,9 @@ void game_input_tick()
     draw_text(hudbuffer,DISPLAY_X-500,DISPLAY_Y-40,font[sys_12_8]);
   }
 
+  // Q
   if(input_readkey(16))
-  {
     debugs[dbbase] = 1;
-  }
 
   if(tick > Player.nextidlesprite)
     Player.sprite = Player.idlesprite;
@@ -326,7 +436,6 @@ void game_input_tick()
     Player.location.X += PLAYER_X_SPEED * (tick - lasttick);
     Player.sprite = player_shipr;
     Player.nextidlesprite = tick + 15;
-    // TODO: SHIP WIDTH
     if((Player.location.X + Player.hitbox_tr.X) > DISPLAY_X)
     {
       Player.location.X = DISPLAY_X - Player.hitbox_tr.X;
@@ -388,6 +497,7 @@ void game_setup()
   game_setup_audio();
   game_setup_stars();
   game_setup_player();
+  game_setup_npcs();
   tick = clock();
 }
 
@@ -407,10 +517,11 @@ void game_tick()
   game_tick_stars();
   game_input_tick();
   game_tick_player();
-
+  game_tick_npcs();
+  
   game_draw_stars();
   game_draw_player();
-
+  game_draw_npcs();
   game_draw_hud();
   game_draw_debugmenu();
 }
