@@ -395,6 +395,42 @@ void game_draw_debugmenu()
 
 }
 
+void game_collider_tick()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    // Excuse this formatting
+    if(
+      game_hitbox_collide(
+        (Player.location.X + Player.hitbox_bl.X),(Player.location.Y + Player.hitbox_bl.Y),
+        (Player.hitbox_tr.X - Player.hitbox_bl.X),(Player.hitbox_tr.Y - Player.hitbox_bl.Y),
+        (NPCS[i].location.X + NPCS[i].hitbox_bl.X),(NPCS[i].location.Y + NPCS[i].hitbox_bl.Y),
+        (NPCS[i].hitbox_tr.X - NPCS[i].hitbox_bl.X),(NPCS[i].hitbox_tr.Y - NPCS[i].hitbox_bl.Y)
+      )
+    )
+    {
+      if(debugs[dbhitbox])
+      {
+        font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
+        sprintf(hudbuffer,"NPCS[%i] hits player",i,NPCS[i].location.X,NPCS[i].location.Y);
+        draw_text(hudbuffer,DISPLAY_X-900,DISPLAY_Y-260-(i * 20),font[sys_12_8]);
+      }
+    }
+  }
+}
+
+int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
+{
+    if((x1 + w1) >= x2)
+      if(x1 <= (x2 + w2))
+        if((y1 + h1) >= y2)
+          if(y1 <= (y2 + h2))
+            return 1;
+
+  return 0;
+}
+
 void game_input_tick()
 {
   if(debugs[dbbase])
@@ -518,6 +554,7 @@ void game_tick()
   game_input_tick();
   game_tick_player();
   game_tick_npcs();
+  game_collider_tick();
   
   game_draw_stars();
   game_draw_player();
