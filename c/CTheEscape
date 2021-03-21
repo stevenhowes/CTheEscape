@@ -923,7 +923,7 @@ int main(int argc, char *argv[])
   display_mode(DISPLAY_MODE);
   load_sprites("Spr");
 
-  //intro();
+  intro();
 
   display_mode(DISPLAY_MODE);
 
