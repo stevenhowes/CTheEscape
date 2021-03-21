@@ -35,7 +35,7 @@ enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey1,stargrey2,stargrey3,
 int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400,0x00ff0000};
 int font[font_max];
 
-enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbmax};
+enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbprojectiles,dbmax};
 int debugs[dbmax];
 
 struct EntityLocation_s {
@@ -469,6 +469,8 @@ void game_draw_debugmenu()
     draw_text("4: performance",DISPLAY_X-200,DISPLAY_Y-120,font[sys_12_8]);
     font_colour(colours[debugs[dbnpcs]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
     draw_text("5: NPCs",DISPLAY_X-200,DISPLAY_Y-140,font[sys_12_8]);
+    font_colour(colours[debugs[dbprojectiles]?debugpink:stargrey1],colours[lcars_black],font[sys_12_8]);
+    draw_text("6: Projectiles",DISPLAY_X-200,DISPLAY_Y-160,font[sys_12_8]);
   }
 
   if(debugs[dbperformance])
@@ -488,12 +490,12 @@ void game_draw_debugmenu()
     }
   }
 
-  if(0)
+  if(debugs[dbprojectiles])
   {
     font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
     for(i = 0; i < MAX_PROJECTILES; i++)
     {
-      sprintf(hudbuffer,"Projectiles[%i] %i,%i %i,%i %i",i,Projectiles[i].velocity.X,Projectiles[i].velocity.Y,Projectiles[i].location.X,Projectiles[i].location.Y,Projectiles[i].active);
+      sprintf(hudbuffer,"Projectiles[%i] %i %i,%i %i,%i",i,Projectiles[i].active,Projectiles[i].velocity.X,Projectiles[i].velocity.Y,Projectiles[i].location.X,Projectiles[i].location.Y);
       draw_text(hudbuffer,DISPLAY_X-800,DISPLAY_Y-60-(i * 20),font[sys_12_8]);
     }
   }
@@ -636,9 +638,9 @@ void game_input_tick()
     // 5
     if(input_readkey(19))
       debugs[dbnpcs] = 1;
-    // W
-    if(input_readkey(33))
-      game_spawn_projectile(-1,DISPLAY_X/2,DISPLAY_Y - 200,0,2,photon1,50);
+    // 6
+    if(input_readkey(24))
+      debugs[dbprojectiles] = 1;
   }
   
   if(debugs[dbinput])
