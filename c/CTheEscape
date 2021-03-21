@@ -553,7 +553,7 @@ void game_collider_tick()
   {
     if(!Projectiles[i].active)
       continue;
-    if(!NPCS[i].collidable)
+    if(!Projectiles[i].collidable)
       continue;
     // Excuse this formatting
     if(
