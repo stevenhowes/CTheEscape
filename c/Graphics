@@ -66,6 +66,18 @@ void display_mode(int mode)
   _kernel_swi(OS_ScreenMode,&inreg,&outreg);
 }
 
+void draw_dotted_line(int x1,int y1,int x2,int y2)
+{
+  inreg.r[0] = 4 + 16;
+  inreg.r[1] = x1;
+  inreg.r[2] = y1;
+  _kernel_swi(OS_Plot,&inreg,&outreg);
+  inreg.r[0] = 5 + 16;
+  inreg.r[1] = x2;
+  inreg.r[2] = y2;
+  _kernel_swi(OS_Plot,&inreg,&outreg);
+}
+
 void draw_line(int x1,int y1,int x2,int y2)
 {
   inreg.r[0] = 4;

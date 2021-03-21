@@ -31,8 +31,8 @@ char hudbuffer[63];
 
 enum font_e{sys_12_8,font_max};
 
-enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey1,stargrey2,stargrey3,debuggreen};
-int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400,0x00ff0000};
+enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey1,stargrey2,stargrey3,debuggreen,phaserorange1,phaserorange2};
+int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x22222200,0x44444400,0x00ff0000,0x0053ff00,0x00d5ff00};
 int font[font_max];
 
 enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbprojectiles,dbmax};
@@ -46,6 +46,7 @@ enum npctype_e{bigdurno, littledurno,maxnpctype};
 
 struct NPC_s {
   struct EntityLocation_s location;
+  enum sprite_e idlesprite;
   enum sprite_e sprite;
   enum npctype_e npctype;
   struct EntityLocation_s velocity;
@@ -81,6 +82,9 @@ struct Player_s {
   struct EntityLocation_s phaser2;
   int targetleft;
   int targetright;
+  short int firingleft;
+  short int firingright;
+  int phaserdamage;
 };
 
 struct Projectile_s {
@@ -239,6 +243,54 @@ void game_draw_player()
     );
   }
 
+  if((Player.firingleft) && (Player.targetleft >= 0))
+  {
+    graphics_colour(colours[phaserorange1]);
+    draw_line(
+      Player.location.X + Player.phaser1.X,
+      Player.location.Y + Player.phaser1.Y,
+      NPCS[Player.targetleft].location.X + ((NPCS[Player.targetleft].hitbox_bl.X + NPCS[Player.targetleft].hitbox_tr.X)/2),
+      NPCS[Player.targetleft].location.Y + NPCS[Player.targetleft].hitbox_bl.Y
+    );
+    graphics_colour(colours[phaserorange2]);
+    draw_dotted_line(
+      Player.location.X + Player.phaser1.X + 1,
+      Player.location.Y + Player.phaser1.Y,
+      NPCS[Player.targetleft].location.X + ((NPCS[Player.targetleft].hitbox_bl.X + NPCS[Player.targetleft].hitbox_tr.X)/2) + 1,
+      NPCS[Player.targetleft].location.Y + NPCS[Player.targetleft].hitbox_bl.Y
+    );
+    draw_dotted_line(
+      Player.location.X + Player.phaser1.X - 1,
+      Player.location.Y + Player.phaser1.Y,
+      NPCS[Player.targetleft].location.X + ((NPCS[Player.targetleft].hitbox_bl.X + NPCS[Player.targetleft].hitbox_tr.X)/2) - 1,
+      NPCS[Player.targetleft].location.Y + NPCS[Player.targetleft].hitbox_bl.Y
+    );
+  }
+
+  if((Player.firingright) && (Player.targetright >= 0))
+  {
+    graphics_colour(colours[phaserorange1]);
+    draw_line(
+      Player.location.X + Player.phaser2.X,
+      Player.location.Y + Player.phaser2.Y,
+      NPCS[Player.targetright].location.X + ((NPCS[Player.targetright].hitbox_bl.X + NPCS[Player.targetright].hitbox_tr.X)/2),
+      NPCS[Player.targetright].location.Y + NPCS[Player.targetright].hitbox_bl.Y
+    );
+    graphics_colour(colours[phaserorange2]);
+    draw_dotted_line(
+      Player.location.X + Player.phaser2.X + 1,
+      Player.location.Y + Player.phaser2.Y,
+      NPCS[Player.targetright].location.X + ((NPCS[Player.targetright].hitbox_bl.X + NPCS[Player.targetright].hitbox_tr.X)/2) + 1,
+      NPCS[Player.targetright].location.Y + NPCS[Player.targetright].hitbox_bl.Y
+    );
+    draw_dotted_line(
+      Player.location.X + Player.phaser2.X - 1,
+      Player.location.Y + Player.phaser2.Y,
+      NPCS[Player.targetright].location.X + ((NPCS[Player.targetright].hitbox_bl.X + NPCS[Player.targetright].hitbox_tr.X)/2) - 1,
+      NPCS[Player.targetright].location.Y + NPCS[Player.targetright].hitbox_bl.Y
+    );
+  }
+
   if(debugs[dbweapons])
   {
     graphics_colour(colours[debuggreen]);
@@ -353,7 +405,9 @@ void game_setup_player()
   Player.phaser2.Y = 75;
   Player.targetleft = -1;
   Player.targetright = -1;
-
+  Player.firingleft = 0;
+  Player.firingright = 0;
+  Player.phaserdamage = 10;
 }
 
 void game_tick_stars()
@@ -404,6 +458,7 @@ void game_respawn_npc(int id)
     switch(NPCS[id].npctype)
     {
       case bigdurno:
+        NPCS[id].idlesprite = durno_ship;
         NPCS[id].sprite = durno_ship;
         NPCS[id].velocity.X = 0;
         NPCS[id].velocity.Y = (rand() % 3) + 1;
@@ -415,6 +470,7 @@ void game_respawn_npc(int id)
         NPCS[id].collideforce = 1000;
         break;
       case littledurno:
+        NPCS[id].idlesprite = durno_ship2;
         NPCS[id].sprite = durno_ship2;
         NPCS[id].velocity.X = (rand() % 3) - 1;
         NPCS[id].velocity.Y = (rand() % 2) + 6;
@@ -496,7 +552,7 @@ void game_draw_debugmenu()
     font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
     for(i = 0; i < MAX_NPCS; i++)
     {
-      sprintf(hudbuffer,"NPCS[%i] %i,%i %i,%i %i",i,NPCS[i].velocity.X,NPCS[i].velocity.Y,NPCS[i].location.X,NPCS[i].location.Y);
+      sprintf(hudbuffer,"NPCS[%i] %i%i,%i %i,%i %i",i,NPCS[i].health,NPCS[i].velocity.X,NPCS[i].velocity.Y,NPCS[i].location.X,NPCS[i].location.Y);
       draw_text(hudbuffer,DISPLAY_X-800,DISPLAY_Y-60-(i * 20),font[sys_12_8]);
     }
   }
@@ -548,15 +604,6 @@ void game_collider_tick()
         Player.integrity += Player.shields;
         Player.shields = 0;
       }
- 
-      if(NPCS[i].health <= 0)
-      {
-        NPCS[i].sprite = explode_shp1;
-        NPCS[i].explodenextframe = tick + 4;
-        sound_play(1,-5,0,100);
-        sound_play(3,-15,0,1000);
-        sound_play(2,-10,1,100);
-      }
     }
   }
 
@@ -603,6 +650,8 @@ void game_player_targets_tick()
 
   for(i = 0; i < MAX_NPCS; i++)
   {
+    if(!NPCS[i].collidable)
+      continue;
     LeftCornerX = NPCS[i].location.X + NPCS[i].hitbox_bl.X;
     LeftCornerY = NPCS[i].location.Y + NPCS[i].hitbox_bl.Y;
     RightCornerX = NPCS[i].location.X + NPCS[i].hitbox_tr.X;
@@ -740,6 +789,17 @@ void game_input_tick()
       Player.location.X = 0 - Player.hitbox_bl.X;
     }
   }
+
+  // Space
+  if(input_readkey(98))
+  {
+    Player.firingleft = 1;
+    Player.firingright = 1;
+    Player.nextshieldheal = tick + 100;
+  }else{
+    Player.firingleft = 0;
+    Player.firingright = 0;
+  }
 }
 
 void game_setup_audio()
@@ -800,8 +860,37 @@ void game_tick_player()
       Player.nextshieldheal = tick + 10;
     }
   }
+
+  if((Player.firingleft) && (Player.targetleft >= 0))
+  {
+    NPCS[Player.targetleft].health -= (tick - lasttick) * Player.phaserdamage;
+  }
+
+  if((Player.firingright) && (Player.targetright >= 0))
+  {
+    NPCS[Player.targetright].health -= (tick - lasttick) * Player.phaserdamage;
+  }
 }
 
+void game_npcs_tick()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    if(NPCS[i].health <= 0)
+    {
+      if(NPCS[i].sprite == NPCS[i].idlesprite)
+      {
+        NPCS[i].collidable = 0;
+        NPCS[i].sprite = explode_shp1;
+        NPCS[i].explodenextframe = tick + 4;
+        sound_play(1,-5,0,100);
+        sound_play(3,-15,0,1000);
+        sound_play(2,-10,1,100);
+      }
+    }
+  }
+}
 void game_tick()
 {
   lasttick = tick;
@@ -817,7 +906,7 @@ void game_tick()
   game_collider_tick();
   game_projectiles_tick();
   game_player_targets_tick();
-  
+  game_npcs_tick();
   game_draw_stars();
   game_draw_player();
   game_draw_npcs();
