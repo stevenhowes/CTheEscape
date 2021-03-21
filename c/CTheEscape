@@ -24,8 +24,8 @@ extern int current_element;
 #define MAX_STARS 49
 #define MAX_PROJECTILES 10
 
-enum sprite_e{player_ship, durno_ship, durno_ship2, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4,photon1,photon2};
-char *sprites[] = {"player_ship","durno_ship","durno_ship2","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2"};
+enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4,photon1,photon2};
+char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2"};
 
 char hudbuffer[63];
 
@@ -79,6 +79,8 @@ struct Player_s {
   struct EntityLocation_s hitbox_tr;
   struct EntityLocation_s phaser1;
   struct EntityLocation_s phaser2;
+  int targetleft;
+  int targetright;
 };
 
 struct Projectile_s {
@@ -275,6 +277,13 @@ void game_draw_npcs()
   for(i = 0; i < MAX_NPCS; i++)
   {
     draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
+
+    // Next sprite up in index is the appropriate target icon
+    if(Player.targetleft == i)
+      draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+    if(Player.targetright == i)
+      draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+
     if(tick > NPCS[i].explodenextframe)
     {
       if((NPCS[i].sprite >= explode_shp1) && (NPCS[i].sprite <= explode_shp4))
@@ -342,6 +351,8 @@ void game_setup_player()
   Player.phaser1.Y = 75;
   Player.phaser2.X = 41;
   Player.phaser2.Y = 75;
+  Player.targetleft = -1;
+  Player.targetright = -1;
 
 }
 
@@ -565,6 +576,7 @@ void game_collider_tick()
       )
     )
     {
+      sound_play(2,-5, 20,1);
       Projectiles[i].active = 0;
       Player.shields -= Projectiles[i].damage;
       if(Player.shields < 0)
@@ -574,6 +586,54 @@ void game_collider_tick()
       }
     }
   }
+}
+
+void game_player_targets_tick()
+{
+  int i;
+  int NoseX = Player.location.X + Player.hitbox_bl.X + (Player.hitbox_tr.X/2);
+  int NoseXLeft = Player.location.X + Player.hitbox_bl.X;
+  int NoseXRight = Player.location.X + Player.hitbox_bl.X  + Player.hitbox_tr.X;
+  int NoseY = Player.location.Y + + Player.hitbox_bl.Y  + Player.hitbox_tr.Y;
+  int LeftDistance = 1000;
+  int RightDistance = 1000;
+  int LeftCornerX, LeftCornerY, RightCornerX,DistanceX,DistanceY;
+  Player.targetleft = -1;
+  Player.targetright = -1;
+
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    LeftCornerX = NPCS[i].location.X + NPCS[i].hitbox_bl.X;
+    LeftCornerY = NPCS[i].location.Y + NPCS[i].hitbox_bl.Y;
+    RightCornerX = NPCS[i].location.X + NPCS[i].hitbox_tr.X;
+
+    if(LeftCornerY > NoseY)
+    {
+      DistanceY = LeftCornerY - NoseY;
+      DistanceX = abs(NoseX - ((LeftCornerX + RightCornerX) / 2));
+
+      if((DistanceY/5) > DistanceX)
+      {
+        if((NoseXRight - ((LeftCornerX + RightCornerX) / 2)) > 0)
+        {
+          if(DistanceY < LeftDistance)
+          {
+            LeftDistance = DistanceY;
+            Player.targetleft = i;
+          }
+        }
+        if((NoseXLeft - ((LeftCornerX + RightCornerX) / 2)) < 0)
+        {
+          if(DistanceY < RightDistance)
+          {
+            RightDistance = DistanceY;
+            Player.targetright = i;
+          }
+        }
+      }
+    }
+  }
+
 }
 
 int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
@@ -756,6 +816,7 @@ void game_tick()
   game_tick_npcs();
   game_collider_tick();
   game_projectiles_tick();
+  game_player_targets_tick();
   
   game_draw_stars();
   game_draw_player();
