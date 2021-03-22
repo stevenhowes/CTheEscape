@@ -24,8 +24,8 @@ extern int current_element;
 #define MAX_STARS 49
 #define MAX_PROJECTILES 10
 
-enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2};
-char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2"};
+enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2,plasma1,plasma2};
+char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
 
 char hudbuffer[63];
 
@@ -48,6 +48,8 @@ struct NPC_s {
   struct EntityLocation_s location;
   enum sprite_e idlesprite;
   enum sprite_e sprite;
+  enum sprite_e weaponspritestart;
+  enum sprite_e weaponspriteend;
   enum npctype_e npctype;
   struct EntityLocation_s velocity;
   int health;
@@ -58,6 +60,7 @@ struct NPC_s {
   int explodenextframe;
   int nextfire;
   int fireinterval;
+  int firewidth;
 };
 
 struct Star_s {
@@ -90,6 +93,8 @@ struct Player_s {
 struct Projectile_s {
   struct EntityLocation_s location;
   enum sprite_e sprite;
+  enum sprite_e spritestart;
+  enum sprite_e spriteend;
   struct EntityLocation_s velocity;
   int collidable;
   int nextframe;
@@ -102,6 +107,7 @@ struct NPC_s NPCS[MAX_NPCS];
 struct Projectile_s Projectiles[MAX_PROJECTILES];
 struct Player_s Player;
 
+extern void game_respawn_npc(int id);
 
 int tick = 0;
 int lasttick = 0;
@@ -182,7 +188,7 @@ void intro()
   }
 }
 
-void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy,enum sprite_e sprite, int damage)
+void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy, enum sprite_e spritestart, enum sprite_e spriteend, int damage)
 {
   int i;
   
@@ -198,17 +204,20 @@ void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy,enum sprite_e 
   // If no velocity X specified we're targetting the player
   if(Vx == 0)
   {
+    int V;
     int Xdistance = abs((Player.location.X + (Player.hitbox_tr.X/2)) - Px);
     int Ydistance = abs((Player.location.Y + (Player.hitbox_tr.Y/2)) - Py);
     int distance = sqrt((Xdistance^2) + (Ydistance^2));
-    Vx = Xdistance / (distance / 10);
-    Vy = Ydistance / (distance / 10);
+    V = Vy;
+    Vx = Xdistance / (distance / Vy);
+    Vy = Ydistance / (distance / Vy);
+
     if(Player.location.X > Px)
       Vx = 0 - Vx;
   }
 
   // If it's too close to horizontal you can't dodge
-  if(Vy < 2)
+  if(Py < (Player.location.X + 100))
     id = -1;
   
   //If no free IDs then we go without
@@ -219,7 +228,9 @@ void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy,enum sprite_e 
     Projectiles[id].velocity.X = Vx;
     Projectiles[id].velocity.Y = Vy;
     Projectiles[id].active = 1;
-    Projectiles[id].sprite = sprite;
+    Projectiles[id].sprite = spritestart;
+    Projectiles[id].spritestart = spritestart;
+    Projectiles[id].spriteend = spriteend;
     Projectiles[id].nextframe = tick + 10;
     Projectiles[id].damage = damage;
     Projectiles[id].collidable = 1;
@@ -372,6 +383,9 @@ void game_draw_projectiles()
       continue;
 
     draw_sprite(sprites[Projectiles[i].sprite], Projectiles[i].location.X,Projectiles[i].location.Y);
+    Projectiles[i].sprite++;
+    if(Projectiles[i].sprite > Projectiles[i].spriteend)
+      Projectiles[i].sprite = Projectiles[i].spritestart;
   }
 }
 
@@ -452,9 +466,11 @@ void game_respawn_npc(int id)
 {
   NPCS[id].location.X = rand() % DISPLAY_X;
   NPCS[id].location.Y = DISPLAY_Y + (rand() % (DISPLAY_Y/2));
-  NPCS[id].npctype = rand() % (maxnpctype);
+  if((rand() % 10) > 3)
+    NPCS[id].npctype = littledurno;
+  else
+    NPCS[id].npctype = bigdurno;
   NPCS[id].collidable = 1;
-  NPCS[id].fireinterval = 200;
   NPCS[id].nextfire = tick + (rand() % 100);
     switch(NPCS[id].npctype)
     {
@@ -469,18 +485,26 @@ void game_respawn_npc(int id)
         NPCS[id].hitbox_tr.X = 48;
         NPCS[id].hitbox_tr.Y = 74;
         NPCS[id].collideforce = 1000;
+        NPCS[id].weaponspritestart = photon1;
+        NPCS[id].weaponspriteend = photon2;
+        NPCS[id].fireinterval = 200;
+        NPCS[id].firewidth = 400;
         break;
       case littledurno:
         NPCS[id].idlesprite = durno_ship2;
         NPCS[id].sprite = durno_ship2;
-        NPCS[id].velocity.X = (rand() % 3) - 1;
-        NPCS[id].velocity.Y = (rand() % 2) + 6;
+        NPCS[id].velocity.X = (rand() % 3) + 2;
+        NPCS[id].velocity.Y = (rand() % 2) + 3;
         NPCS[id].health = 30;
         NPCS[id].hitbox_bl.X = 0;
         NPCS[id].hitbox_bl.Y = 0;
         NPCS[id].hitbox_tr.X = 38;
         NPCS[id].hitbox_tr.Y = 56;
         NPCS[id].collideforce = 50;
+        NPCS[id].weaponspritestart = plasma1;
+        NPCS[id].weaponspriteend = plasma2;
+        NPCS[id].fireinterval = 10;
+        NPCS[id].firewidth = 60;
         break;
     };
 }
@@ -502,6 +526,25 @@ void game_tick_npcs()
     NPCS[i].location.Y -= (tick - lasttick) * NPCS[i].velocity.Y;
     NPCS[i].location.X -= (tick - lasttick) * NPCS[i].velocity.X;
 
+    if(NPCS[i].npctype == littledurno)
+    {
+      if(NPCS[i].location.Y > (Player.location.Y + 500))
+      {
+        if(abs(NPCS[i].location.X - Player.location.X) > 100)
+        {
+          if(NPCS[i].location.X < Player.location.X)
+            NPCS[i].velocity.X = 0 - abs(NPCS[i].velocity.X);
+          else
+            NPCS[i].velocity.X = abs(NPCS[i].velocity.X);
+        }
+      }else{
+        if(NPCS[i].velocity.X > 0)
+         NPCS[i].velocity.X = 1;
+        else
+         NPCS[i].velocity.X = -1;
+      }
+    }
+
     if(NPCS[i].location.Y + NPCS[i].hitbox_tr.Y <= 0)
       game_respawn_npc(i);
     
@@ -510,12 +553,21 @@ void game_tick_npcs()
     
     if((NPCS[i].location.X + NPCS[i].hitbox_bl.X) < 0)
       game_respawn_npc(i);
+
     if(tick > NPCS[i].nextfire)
     {
       // Dont fire if off screen
       if((NPCS[i].location.Y < DISPLAY_Y))
-        game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, NPCS[i].velocity.Y, photon1, 30);
-      NPCS[i].nextfire = tick + NPCS[i].fireinterval;
+      {
+        if((NPCS[i].firewidth == -1) || (abs(Player.location.X - NPCS[i].location.X) < NPCS[i].firewidth))
+        {
+          if(NPCS[i].weaponspritestart == photon1)
+            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 10, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 50);
+          else
+            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 40, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 5);
+          NPCS[i].nextfire = tick + NPCS[i].fireinterval;
+        }
+      }
     }
   }
 }
@@ -652,6 +704,8 @@ void game_player_targets_tick()
   for(i = 0; i < MAX_NPCS; i++)
   {
     if(!NPCS[i].collidable)
+      continue;
+    if(NPCS[i].location.Y > (DISPLAY_Y-200))
       continue;
     LeftCornerX = NPCS[i].location.X + NPCS[i].hitbox_bl.X;
     LeftCornerY = NPCS[i].location.Y + NPCS[i].hitbox_bl.Y;
