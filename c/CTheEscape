@@ -169,7 +169,8 @@ void intro()
   sound_composition_element_add(currentstart,4,sound_note("F2"),100);
   currentstart += 100;
   
-  draw_sprite("tng",320,400);
+  draw_sprite("tng_st",320,600);
+  draw_sprite("tng_te",425,500);
   sound_composition_start(clock());
   
   while(sound_composition_incomplete())
