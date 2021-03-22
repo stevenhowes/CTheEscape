@@ -495,7 +495,7 @@ void game_respawn_npc(int id)
         NPCS[id].sprite = durno_ship2;
         NPCS[id].velocity.X = (rand() % 3) + 2;
         NPCS[id].velocity.Y = (rand() % 2) + 3;
-        NPCS[id].health = 30;
+        NPCS[id].health = 300;
         NPCS[id].hitbox_bl.X = 0;
         NPCS[id].hitbox_bl.Y = 0;
         NPCS[id].hitbox_tr.X = 38;
