@@ -31,6 +31,4 @@ Known bugs:
 
 No ending
 
-Exploding NPCs go on forever
-
 Flashing cursor in top left

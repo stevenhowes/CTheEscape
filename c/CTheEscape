@@ -24,8 +24,8 @@ extern int current_element;
 #define MAX_STARS 49
 #define MAX_PROJECTILES 10
 
-enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_shp1,explode_shp2,explode_shp3,explode_shp4,photon1,photon2};
-char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2"};
+enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2};
+char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2"};
 
 char hudbuffer[63];
 
@@ -339,11 +339,11 @@ void game_draw_npcs()
 
     if(tick > NPCS[i].explodenextframe)
     {
-      if((NPCS[i].sprite >= explode_shp1) && (NPCS[i].sprite <= explode_shp4))
+      if((NPCS[i].sprite >= explode_start) && (NPCS[i].sprite <= explode_end))
       {
         NPCS[i].sprite++;
-        if(NPCS[i].sprite > explode_shp4)
-          NPCS[i].sprite = explode_shp1;
+        if(NPCS[i].sprite > explode_end)
+          game_respawn_npc(i);
       }
       NPCS[i].explodenextframe = tick + 4;
     }
@@ -883,7 +883,7 @@ void game_npcs_tick()
       if(NPCS[i].sprite == NPCS[i].idlesprite)
       {
         NPCS[i].collidable = 0;
-        NPCS[i].sprite = explode_shp1;
+        NPCS[i].sprite = explode_start;
         NPCS[i].explodenextframe = tick + 4;
         sound_play(1,-5,0,100);
         sound_play(3,-15,0,1000);
