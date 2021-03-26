@@ -7,7 +7,7 @@ extern _kernel_swi_regs inreg;
 extern _kernel_swi_regs outreg;
 
 extern unsigned char *buffer;
-unsigned char screen = 1;
+int screen = 1;
 
 // Loads sprite file into buffer
 void load_sprites(char* filename)
@@ -61,9 +61,30 @@ void load_sprites(char* filename)
 
 void display_mode(int mode)
 {
-  inreg.r[0] = 0;
-  inreg.r[1] = mode;
-  _kernel_swi(OS_ScreenMode,&inreg,&outreg);
+  int pitch;
+  int height=256; // TODO: This shouldn't be here!
+
+  // OS_ScreenMode doesn't seem to work in 3.10
+  inreg.r[0] = 22;
+  _kernel_swi(OS_WriteC,&inreg,&outreg);
+  inreg.r[0] = mode;
+  _kernel_swi(OS_WriteC,&inreg,&outreg);
+
+  // The SDL library does this if double buffering is enabled - seems
+  // to be what makes it work - although other examples dont have this
+  inreg.r[0] = -1;
+  inreg.r[1] = 6;
+  _kernel_swi(OS_ReadModeVariable, &inreg, &outreg);
+  pitch = outreg.r[2];
+
+  inreg.r[0] = 2; /* Screen area */
+  _kernel_swi(OS_ReadDynamicArea, &inreg, &outreg);
+  inreg.r[1] = (pitch * height * 2) - outreg.r[1];
+  if (_kernel_swi(OS_ChangeDynamicArea, &inreg, &outreg) != NULL)
+  {
+    printf("Couldn't OS_ChangeDynamicArea");
+    exit(0);
+  }
 }
 
 void draw_dotted_line(int x1,int y1,int x2,int y2)
@@ -157,23 +178,21 @@ void graphics_colour(int setcolour)
 }
 void screen_flipbuffer()
 {
-   inreg.r[0] = 19;
-  _kernel_swi(OS_Byte,&inreg,&outreg);
-  
-/*   inreg.r[0] = 114;
-   inreg.r[1] = 1;
+   // Hardware
+   inreg.r[0] = 113;
+   inreg.r[1] = screen+1;
   _kernel_swi(OS_Byte,&inreg,&outreg);
 
-   inreg.r[0] = 113;
-   inreg.r[1] = screen;
+  screen ^= 1;
+
+  // Drivers
+  inreg.r[0] = 112;
+  inreg.r[1] = screen+1;
+  _kernel_swi(OS_Byte,&inreg,&outreg);
+
+  inreg.r[0] = 19;
   _kernel_swi(OS_Byte,&inreg,&outreg);
   
-  screen++;
-  if(screen > 3)
-    screen = 1;
-  inreg.r[0] = 112;
-  inreg.r[1] = screen;
-  _kernel_swi(OS_Byte,&inreg,&outreg);*/
 }
 
 void screen_clear()

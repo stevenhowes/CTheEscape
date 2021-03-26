@@ -1,5 +1,5 @@
-Set TheEscape$Dir <Obey$Dir>
-IconSprites <TheEscape$Dir>.!Sprites
-WimpSlot -min 512k -max 512k
-Dir <TheEscape$Dir>
-Run <TheEscape$Dir>.!RunImage
+Set TheEsc$Dir <Obey$Dir>
+IconSprites <TheEsc$Dir>.!Sprites
+WimpSlot -min 128k -max 128k
+Dir <TheEsc$Dir>
+Run <TheEsc$Dir>.!RunImage

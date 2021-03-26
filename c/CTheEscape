@@ -10,13 +10,13 @@ _kernel_swi_regs outreg;
 
 // Sprite buffer
 unsigned char *buffer;
-
+extern int screen;
 extern struct CompositionElement composition[128];
 extern int current_element;
 
-#define DISPLAY_MODE 28
+#define DISPLAY_MODE 15
 #define DISPLAY_X 1280
-#define DISPLAY_Y 960
+#define DISPLAY_Y 1024
 
 #define PLAYER_Y_START 100
 #define PLAYER_X_SPEED 10
@@ -25,8 +25,8 @@ extern int current_element;
 #define MAX_PROJECTILES 10
 
 enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2,plasma1,plasma2};
+//char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
 char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
-
 char hudbuffer[63];
 
 enum font_e{sys_12_8,font_max};
@@ -340,36 +340,40 @@ void game_draw_npcs()
   int i;
   for(i = 0; i < MAX_NPCS; i++)
   {
-    draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
-
-    // Next sprite up in index is the appropriate target icon
-    if(Player.targetleft == i)
-      draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
-    if(Player.targetright == i)
-      draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
-
-    if(tick > NPCS[i].explodenextframe)
+    // Don't bother if they are off the screen
+    if(NPCS[i].location.Y < DISPLAY_Y)
     {
-      if((NPCS[i].sprite >= explode_start) && (NPCS[i].sprite <= explode_end))
+      draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
+
+      // Next sprite up in index is the appropriate target icon
+      if(Player.targetleft == i)
+        draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+      if(Player.targetright == i)
+        draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+
+      if(tick > NPCS[i].explodenextframe)
       {
-        NPCS[i].sprite++;
-        if(NPCS[i].sprite > explode_end)
-          game_respawn_npc(i);
+        if((NPCS[i].sprite >= explode_start) && (NPCS[i].sprite <= explode_end))
+        {
+          NPCS[i].sprite++;
+          if(NPCS[i].sprite > explode_end)
+            game_respawn_npc(i);
+        }
+        NPCS[i].explodenextframe = tick + 4;
       }
-      NPCS[i].explodenextframe = tick + 4;
-    }
-    
-    if(debugs[dbhitbox])
-    {
-      graphics_colour(colours[debugpink]);
+      
+      if(debugs[dbhitbox])
+      {
+        graphics_colour(colours[debugpink]);
 
-      // Bounding box debug
-      draw_rectangle(
-        NPCS[i].location.X + NPCS[i].hitbox_bl.X,
-        NPCS[i].location.Y + NPCS[i].hitbox_bl.Y,
-        NPCS[i].location.X + NPCS[i].hitbox_tr.X,
-        NPCS[i].location.Y + NPCS[i].hitbox_tr.Y
-      );
+        // Bounding box debug
+        draw_rectangle(
+          NPCS[i].location.X + NPCS[i].hitbox_bl.X,
+          NPCS[i].location.Y + NPCS[i].hitbox_bl.Y,
+          NPCS[i].location.X + NPCS[i].hitbox_tr.X,
+          NPCS[i].location.Y + NPCS[i].hitbox_tr.Y
+        );
+      }
     }
   }
 }
@@ -596,7 +600,7 @@ void game_draw_debugmenu()
   if(debugs[dbperformance])
   {
     font_colour(colours[debuggreen],colours[lcars_black],font[sys_12_8]);
-    sprintf(hudbuffer,"Cents per frame: %i",(tick-lasttick));
+    sprintf(hudbuffer,"CPF: %i",(tick-lasttick));
     draw_text(hudbuffer,DISPLAY_X-500,DISPLAY_Y-60,font[sys_12_8]);
   }
 
@@ -950,6 +954,7 @@ void game_tick()
 {
   lasttick = tick;
   tick = clock();
+  
 
   screen_flipbuffer();
   screen_clear();
@@ -976,14 +981,17 @@ int main(int argc, char *argv[])
   sound_on();
 
   display_mode(DISPLAY_MODE);
+
+  screen_clear();
+
   load_sprites("Spr");
+  font[sys_12_8] = font_find("Trinity.Medium",12,8);
 
   intro();
 
   display_mode(DISPLAY_MODE);
-
-  font[sys_12_8] = font_find("System.Medium",12,8);
-
+  screen_clear();
+  
   game_setup();
   
   while(Player.integrity > 0)
