@@ -1,3 +1,3 @@
-c/* linguist-language=C
-h/* linguist-language=C
-Makefile,fe1 linguist-language=Makefile
+!TheEsc/c/* linguist-language=C
+!TheEsc/h/* linguist-language=C
+!TheEsc/Makefile,fe1 linguist-language=Makefile
