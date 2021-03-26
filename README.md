@@ -7,6 +7,8 @@ All files are in RiscOS formats, suitable for hostfs on RPCEmu. Binary is includ
 Tested on:
 
 RPCEmu on Win10 (recompiler) - RiscOS 3.71 on StrongARM with 128MB of RAM, 2MB VRAM
+Arculator 2.0 - RiscOS 3.10 emulating Acorn A3000 with 2MB RAM
+Acorn A3000, 2MB RAM (current build not tested) - performance is rubbish
 
 Controls so far:
 
