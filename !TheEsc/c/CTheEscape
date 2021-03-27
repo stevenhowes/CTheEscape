@@ -969,7 +969,9 @@ int main(int argc, char *argv[])
   while(Player.integrity > 0)
     game_tick();
 
+  screen_clear();
   printf("you ded\n");
+  screen_flipbuffer();
 
   free(buffer);
 
