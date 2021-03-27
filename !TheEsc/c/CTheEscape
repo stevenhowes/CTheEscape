@@ -21,7 +21,7 @@ int lastprofile = 0;
 #define PLAYER_Y_START 100
 #define PLAYER_X_SPEED 10
 #define MAX_NPCS 5
-#define MAX_STARS 5
+#define MAX_STARS 10
 #define MAX_PROJECTILES 10
 //#define PROFILE(X) lastprofile = clock(); X; printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%s %i\n", #X, (clock() - lastprofile))
 #define PROFILE(X) X
@@ -875,13 +875,6 @@ void game_draw_hud()
 {
   draw_sprite("lcars",4,DISPLAY_Y-180);
 
-  font_colour(colours[lcars_black],colours[lcars_violet1],font[sys_12_8]);
-
-  draw_text("Shields",75,DISPLAY_Y-62,font[sys_12_8]);
-  draw_text("Integrity",75,DISPLAY_Y-92,font[sys_12_8]);
-  draw_text("Velocity",75,DISPLAY_Y-122,font[sys_12_8]);
-  draw_text("Distance",75,DISPLAY_Y-152,font[sys_12_8]);
-  
   font_colour(colours[lcars_violet1],colours[lcars_black],font[sys_12_8]);
 
   sprintf(hudbuffer,"%i",Player.shields);
