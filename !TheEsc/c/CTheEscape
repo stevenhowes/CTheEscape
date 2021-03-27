@@ -883,21 +883,10 @@ void game_setup_audio()
 
 void game_draw_hud()
 {
-  draw_sprite("lcars",4,DISPLAY_Y-180);
-
-  font_colour(colours[lcars_violet1],colours[lcars_black],font[sys_12_8]);
-
-  sprintf(hudbuffer,"%i",Player.shields);
-  draw_text(hudbuffer,230,DISPLAY_Y-62,font[sys_12_8]);
-  
-  sprintf(hudbuffer,"%i",Player.integrity);
-  draw_text(hudbuffer,230,DISPLAY_Y-92,font[sys_12_8]);
-
-  sprintf(hudbuffer,"%i",Player.velocity);
-  draw_text(hudbuffer,230,DISPLAY_Y-122,font[sys_12_8]);
-
-  sprintf(hudbuffer,"%i",Player.remainingdistance/1000);
-  draw_text(hudbuffer,230,DISPLAY_Y-152,font[sys_12_8]);
+  draw_sprite("lcars",4,DISPLAY_Y-164);
+  draw_sprite("pointer",141+(Player.shields*2),DISPLAY_Y - 164 + 84);
+  draw_sprite("pointer",141+(Player.integrity*2),DISPLAY_Y - 164 + 44);
+  draw_sprite("pointer",141+(Player.remainingdistance/7500),DISPLAY_Y - 164 + 4);
 }
 
 void game_setup()
