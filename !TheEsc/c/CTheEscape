@@ -25,8 +25,8 @@ int lastprofile = 0;
 #define MAX_PROJECTILES 10
 //#define PROFILE(X) lastprofile = clock(); X; printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%s %i\n", #X, (clock() - lastprofile))
 #define PROFILE(X) X
-enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2,plasma1,plasma2};
-char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
+enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_end,photon1,photon2,plasma1,plasma2};
+char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2","plasma1","plasma2"};
 
 char hudbuffer[63];
 
@@ -507,7 +507,7 @@ void game_respawn_npc(int id)
         NPCS[id].collideforce = 50;
         NPCS[id].weaponspritestart = plasma1;
         NPCS[id].weaponspriteend = plasma2;
-        NPCS[id].fireinterval = 10;
+        NPCS[id].fireinterval = 80;
         NPCS[id].firewidth = 60;
         break;
     };
@@ -566,9 +566,9 @@ void game_tick_npcs()
         if((NPCS[i].firewidth == -1) || (abs(Player.location.X - NPCS[i].location.X) < NPCS[i].firewidth))
         {
           if(NPCS[i].weaponspritestart == photon1)
-            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 10, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 50);
+            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 5, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 60);
           else
-            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 40, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 5);
+            game_spawn_projectile(-1,NPCS[i].location.X, NPCS[i].location.Y, 0, 10, NPCS[i].weaponspritestart, NPCS[i].weaponspriteend, 20);
           NPCS[i].nextfire = tick + NPCS[i].fireinterval;
         }
       }
