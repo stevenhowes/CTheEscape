@@ -13,7 +13,7 @@ unsigned char *buffer;
 extern int screen;
 extern struct CompositionElement composition[128];
 extern int current_element;
-
+int lastprofile = 0;
 #define DISPLAY_MODE 15
 #define DISPLAY_X 1280
 #define DISPLAY_Y 1024
@@ -23,10 +23,11 @@ extern int current_element;
 #define MAX_NPCS 5
 #define MAX_STARS 5
 #define MAX_PROJECTILES 10
-
+//#define PROFILE(X) lastprofile = clock(); X; printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%s %i\n", #X, (clock() - lastprofile))
+#define PROFILE(X) X
 enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_shp4,explode_shp5,explode_shp6,explode_shp7,explode_end,photon1,photon2,plasma1,plasma2};
-//char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
 char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","explode_shp5","explode_shp6","explode_shp7","explode_shp8","photon1","photon2","plasma1","plasma2"};
+
 char hudbuffer[63];
 
 enum font_e{sys_12_8,font_max};
@@ -396,10 +397,9 @@ void game_draw_projectiles()
 void game_draw_stars()
 {
   unsigned char i;
-  
+  graphics_colour(Stars[0].colour);
   for(i = 0; i < MAX_STARS; i++)
   {
-    graphics_colour(Stars[i].colour);
     draw_line(Stars[i].location.X,Stars[i].location.Y,Stars[i].location.X,Stars[i].location.Y+Stars[i].length);
   }
 }
@@ -954,26 +954,25 @@ void game_tick()
 {
   lasttick = tick;
   tick = clock();
-  
 
   screen_flipbuffer();
   screen_clear();
 
-  game_tick_stars();
-  game_input_tick();
-  game_tick_player();
-  game_tick_npcs();
-  game_collider_tick();
-  game_projectiles_tick();
-  game_player_targets_tick();
-  game_npcs_tick();
-  game_draw_stars();
-  game_draw_player();
-  game_draw_npcs();
-  game_draw_projectiles();
+  PROFILE(game_tick_stars());
+  PROFILE(game_input_tick());
+  PROFILE(game_tick_player());
+  PROFILE(game_tick_npcs());
+  PROFILE(game_collider_tick());
+  PROFILE(game_projectiles_tick());
+  PROFILE(game_player_targets_tick());
+  PROFILE(game_npcs_tick());
+  PROFILE(game_draw_stars());
+  PROFILE(game_draw_player());
+  PROFILE(game_draw_npcs());
+  PROFILE(game_draw_projectiles());
 
-  game_draw_hud();
-  game_draw_debugmenu();
+  PROFILE(game_draw_hud());
+  PROFILE(game_draw_debugmenu());
 }
 
 int main(int argc, char *argv[])
