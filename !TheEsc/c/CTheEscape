@@ -115,7 +115,7 @@ extern int screen;
 void intro()
 {
   int currentstart = 0;
-
+  int introframe = 0;
   sound_voices(4);
 
   sound_set_voice(1,"WaveSynth-Beep");
@@ -128,61 +128,80 @@ void intro()
   sound_composition_element_add(currentstart,1,sound_note("A4#"),200);
   sound_composition_element_add(currentstart,2,sound_note("A5#"),200);
   currentstart += 200;
-  sound_composition_element_add(currentstart,1,sound_note("F3"),200);
-  sound_composition_element_add(currentstart,2,sound_note("F4"),200);
+  sound_composition_element_add(currentstart,3,sound_note("F3"),200);
+  sound_composition_element_add(currentstart,4,sound_note("F4"),200);
   currentstart += 200;
   sound_composition_element_add(currentstart,1,sound_note("G3#"),200);
   sound_composition_element_add(currentstart,2,sound_note("G4#"),200);
   currentstart += 200;
-  sound_composition_element_add(currentstart,1,sound_note("C3"),200);
-  sound_composition_element_add(currentstart,2,sound_note("C4"),200);
+  sound_composition_element_add(currentstart,3,sound_note("C3"),200);
+  sound_composition_element_add(currentstart,4,sound_note("C4"),200);
   currentstart += 200;
 
   // DUn, dun, daan duhhn
   sound_composition_element_add(currentstart,1,sound_note("A3#"),200);
   sound_composition_element_add(currentstart,2,sound_note("A4#"),200);
   currentstart += 200;
-  sound_composition_element_add(currentstart,1,sound_note("F2"),200);
+  sound_composition_element_add(currentstart,3,sound_note("F2"),200);
   currentstart += 200;
-  sound_composition_element_add(currentstart,2,sound_note("G2#"),200);
+  sound_composition_element_add(currentstart,4,sound_note("G2#"),200);
   currentstart += 200;
   sound_composition_element_add(currentstart,1,sound_note("C2"),200);
-  currentstart += 250;
-
-  // Duh
-  sound_composition_element_add(currentstart,3,sound_note("A3#"),300);
-  sound_composition_element_add(currentstart,4,sound_note("A2#"),300);
   currentstart += 200;
 
-  //REM Dun De Da
+  // Duh
+  sound_composition_element_add(currentstart,2,sound_note("A3#"),400);
+  sound_composition_element_add(currentstart,3,sound_note("A2#"),400);
+  currentstart += 250;
+
+  // Dun De Da
   sound_composition_element_add(currentstart,1,sound_note("F1"),20);
   currentstart += 50;
-  sound_composition_element_add(currentstart,2,sound_note("A2#"),5);
+  sound_composition_element_add(currentstart,4,sound_note("A2#"),5);
   currentstart += 20;
-  sound_composition_element_add(currentstart,1,sound_note("D2#"),200);
+  sound_composition_element_add(currentstart,2,sound_note("D2#"),200);
   currentstart += 180;
 
 
-  sound_composition_element_add(currentstart,2,sound_note("D2"),50);
+  sound_composition_element_add(currentstart,3,sound_note("D2"),50);
   currentstart += 50;
   sound_composition_element_add(currentstart,1,sound_note("A2#"),30);
   currentstart += 30;
   sound_composition_element_add(currentstart,2,sound_note("G1"),50);
   currentstart += 50;
-  sound_composition_element_add(currentstart,1,sound_note("C2"),50);
+  sound_composition_element_add(currentstart,5,sound_note("C2"),50);
   currentstart += 50;
   sound_composition_element_add(currentstart,3,sound_note("A2#"),100);
-  sound_composition_element_add(currentstart,4,sound_note("F2"),100);
+  sound_composition_element_add(currentstart,1,sound_note("F2"),100);
   currentstart += 100;
-  
-  draw_sprite("tng_st",320,600);
-  draw_sprite("tng_te",425,500);
+
+  tick = clock();
+
   sound_composition_start(clock());
-  
+
+        draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
+
   while(sound_composition_incomplete())
   {
     sound_composition_tick(clock());
 
+    if(introframe == 0)
+    {
+      if(clock() > (tick + 200))
+      {
+        introframe++;
+        draw_sprite("tng_st",320,600);
+      }
+    }
+    if(introframe == 1)
+    {
+      if(clock() > (tick + 600))
+      {
+        introframe++;
+        draw_sprite("tng_te",425,500);
+      }
+    }
+    
     if(input_readkey(98))
       sound_composition_stop();
   }
