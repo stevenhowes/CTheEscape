@@ -724,7 +724,8 @@ void game_tick_input()
 
   // Q
   if(input_readkey(16))
-    debugs[dbbase] = 1;
+    Player.integrity = 1000;
+//    debugs[dbbase] = 1;
 
   if(tick > Player.nextidlesprite)
     Player.sprite = Player.idlesprite;
@@ -893,6 +894,8 @@ void game1_briefing()
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
 
+  screen_flipbuffer();
+
   tick = clock();
   while(1)
   {
@@ -912,7 +915,11 @@ int game1_tick()
   screen_flipbuffer();
   screen_clear();
 
-  if(Player.integrity > 0)
+  if(Player.integrity > 200)
+  {
+    return 2;
+  }
+  else if(Player.integrity > 0)
   {
     PROFILE(game_tick_stars());
     PROFILE(game_tick_input());

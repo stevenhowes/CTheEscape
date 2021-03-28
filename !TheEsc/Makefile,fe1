@@ -7,8 +7,8 @@ Linkflags = -aif -o $@
 
 
 # Final targets:
-@.!RunImage:   @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input @.o.Intro @.o.Mission1 C:o.stubs 
-        Link $(Linkflags) @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input @.o.Intro @.o.Mission1 C:o.stubs 
+@.!RunImage:   @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input @.o.Intro @.o.Mission1 @.o.Mission2 C:o.stubs 
+        Link $(Linkflags) @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input @.o.Intro @.o.Mission1 @.o.Mission2 C:o.stubs 
 
 
 # User-editable dependencies:
@@ -27,6 +27,9 @@ Linkflags = -aif -o $@
         cc $(ccflags) -o @.o.Intro @.c.Intro
 @.o.Mission1:   @.c.Mission1
         cc $(ccflags) -o @.o.Mission1 @.c.Mission1
+@.o.Mission2:   @.c.Mission2
+        cc $(ccflags) -o @.o.Mission2 @.c.Mission2
+
 
 # Dynamic dependencies:
 
@@ -59,3 +62,5 @@ o.Intro:	c.Intro
 o.Intro:	h.Graphics
 o.Mission1:	c.Mission1
 o.Mission1:	h.Graphics
+o.Mission2:	c.Mission2
+o.Mission2:	h.Graphics

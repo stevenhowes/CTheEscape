@@ -20,7 +20,7 @@ Left Arrow: Left
 
 Right Arrow: Right
 
-Q: Display debug info (then numbers to select debug action) - Currently non-functioning
+Q: Skip level (will be removed)
 
 Space Bar: Fire phasers
 

@@ -36,7 +36,8 @@ int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, 
 
 int main(int argc, char *argv[])
 {
-  int lastoutcome = 0;
+  int lastoutcome = 1;
+  int outcome = 0;
   sound_on();
 
   // Set initial display mode
@@ -49,17 +50,39 @@ int main(int argc, char *argv[])
   // Intro titles + music
   intro();
 
+  screen_flipbuffer();
   screen_clear();
 
   // Mission 1
-  game1_briefing();
-  screen_clear();
-
-  game1_setup();
-  while(!lastoutcome)
+  while(lastoutcome == 1)
   {
-    lastoutcome = game1_tick();
+    outcome = 0;
+    game1_briefing();
+    screen_clear();
+    game1_setup();
+    while(!outcome)
+    {
+      outcome = game1_tick();
+    }
+    lastoutcome = outcome;
   }
+
+  lastoutcome = 1;
+
+  // Mission 2
+  while(lastoutcome == 1)
+  {
+    outcome = 0;
+    game2_briefing();
+    screen_clear();
+    //game2_setup();
+    while(!outcome)
+    {
+      outcome = game2_tick();
+    }
+    lastoutcome = outcome;
+  }
+
 
   free(buffer);
 
