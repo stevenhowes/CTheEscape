@@ -61,6 +61,7 @@ void sound_composition_init()
   {
     composition[i].Start = -1;
   }
+  current_element = 0;
 }
 
 void sound_composition_element_add(int start, int channel, int note, int length)
@@ -101,6 +102,7 @@ void sound_composition_debug()
 void sound_composition_start(int cent)
 {
   composition_startcent = cent;
+  current_playback_element = 0;
 }
 
 void sound_composition_stop()

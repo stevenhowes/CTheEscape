@@ -782,7 +782,7 @@ void game_draw_hud()
   draw_sprite("pointer",141+(Player.remainingdistance/7500),DISPLAY_Y - 164 + 4);
 }
 
-void game_setup()
+void game1_setup()
 {
   game_setup_input();
   game_setup_audio();
@@ -816,6 +816,73 @@ void game_tick_player()
   }
 }
 
+void game1_death()
+{
+  int currentstart = 0;
+  int introframe = 0;
+  sound_voices(4);
+
+  sound_set_voice(1,"WaveSynth-Beep");
+  sound_set_voice(2,"WaveSynth-Beep");
+  sound_set_voice(3,"WaveSynth-Beep");
+  sound_set_voice(4,"WaveSynth-Beep");
+  sound_composition_init();
+  
+  currentstart += 100;
+  sound_composition_element_add(currentstart,1,sound_note("D2"),150);
+  currentstart += 100;
+  sound_composition_element_add(currentstart,2,sound_note("G2"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,3,sound_note("B3"),75);
+  currentstart += 40;
+  sound_composition_element_add(currentstart,4,sound_note("G2"),75);
+  currentstart += 50;
+  sound_composition_element_add(currentstart,2,sound_note("B3"),200);
+  currentstart += 200;
+  sound_composition_element_add(currentstart,1,sound_note("A3"),100);
+  currentstart += 100;
+  sound_composition_element_add(currentstart,3,sound_note("G2"),150);
+  currentstart += 150;
+  sound_composition_element_add(currentstart,2,sound_note("E2"),100);
+  currentstart += 100;
+  sound_composition_element_add(currentstart,1,sound_note("D2"),150);
+  currentstart += 150;
+  sound_composition_element_add(currentstart,3,sound_note("D2"),150);
+  currentstart += 100;
+  sound_composition_element_add(currentstart,4,sound_note("G2"),150);
+  currentstart += 150;
+  sound_composition_element_add(currentstart,1,sound_note("B3"),75);
+  currentstart += 40;
+  sound_composition_element_add(currentstart,2,sound_note("G2"),75);
+  currentstart += 40;
+  sound_composition_element_add(currentstart,3,sound_note("B3"),150);
+  currentstart += 150;
+  sound_composition_element_add(currentstart,4,sound_note("A3"),130);
+  currentstart += 100;
+  sound_composition_element_add(currentstart,1,sound_note("G2"),200);
+  currentstart += 300;
+  tick = clock();
+
+  sound_composition_start(clock());
+
+  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
+  draw_sprite("kia",(DISPLAY_X/2)-300,500);
+
+  screen_flipbuffer();
+
+  while(sound_composition_incomplete())
+  {
+    sound_composition_tick(clock());
+
+      if(clock() > (tick + 200))
+      {
+        if(input_readkey(98))
+          sound_composition_stop();
+      }
+  }
+}
+
+
 int game1_tick()
 {
   lasttick = tick;
@@ -824,24 +891,30 @@ int game1_tick()
   screen_flipbuffer();
   screen_clear();
 
-  PROFILE(game_tick_stars());
-  PROFILE(game_tick_input());
-  PROFILE(game_tick_player());
-  PROFILE(game_tick_npcs());
-  PROFILE(game_tick_collider());
-  PROFILE(game_tick_player_targets());
-  PROFILE(game_tick_npcs());
-  PROFILE(game_tick_projectiles());
-  PROFILE(game_draw_stars());
-  PROFILE(game_draw_player());
-  PROFILE(game_draw_npcs());
-  PROFILE(game_draw_projectiles());
-
-  PROFILE(game_draw_hud());
-  PROFILE(game_draw_debugmenu());
-
   if(Player.integrity > 0)
-    return 1;
-  else
+  {
+    PROFILE(game_tick_stars());
+    PROFILE(game_tick_input());
+    PROFILE(game_tick_player());
+    PROFILE(game_tick_npcs());
+    PROFILE(game_tick_collider());
+    PROFILE(game_tick_player_targets());
+    PROFILE(game_tick_npcs());
+    PROFILE(game_tick_projectiles());
+    PROFILE(game_draw_stars());
+    PROFILE(game_draw_player());
+    PROFILE(game_draw_npcs());
+    PROFILE(game_draw_projectiles());
+
+    PROFILE(game_draw_hud());
+    PROFILE(game_draw_debugmenu());
     return 0;
+  }else{
+    screen_flipbuffer();
+    screen_clear();
+    game1_death();
+    return 1;
+  }
+  
+
 }

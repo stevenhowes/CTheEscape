@@ -21,6 +21,7 @@ int lasttick = 0;
 extern int screen;
 
 extern int game1_tick();
+extern void game1_setup();
 
 int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
 {
@@ -35,26 +36,27 @@ int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, 
 
 int main(int argc, char *argv[])
 {
+  int lastoutcome = 0;
   sound_on();
 
+  // Set initial display mode
   display_mode(DISPLAY_MODE);
-
   screen_clear();
-  
+
+  // Load sprite library
   load_sprites("Spr");
 
+  // Intro titles + music
   intro();
 
-  display_mode(DISPLAY_MODE);
   screen_clear();
-  
-  game_setup();
-  
-  while(game1_tick());
 
-  screen_clear();
-  printf("you ded\n");
-  screen_flipbuffer();
+  // Mission 1
+  game1_setup();
+  while(!lastoutcome)
+  {
+    lastoutcome = game1_tick();
+  }
 
   free(buffer);
 
