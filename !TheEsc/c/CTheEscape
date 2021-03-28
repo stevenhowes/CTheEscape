@@ -179,7 +179,7 @@ void intro()
 
   sound_composition_start(clock());
 
-        draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
+  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
 
   while(sound_composition_incomplete())
   {

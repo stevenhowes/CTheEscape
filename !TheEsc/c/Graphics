@@ -131,6 +131,50 @@ void draw_sprite(char* spritename,int x, int y)
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
 
+void draw_spritetext(char* text, int x, int y)
+{
+  int currentx;
+  int currenty;
+  int i;
+  char str[2] = "\0";
+  currentx = x;
+  currenty = y;
+  for(i = 0; i < strlen(text); i++)
+  {
+    str[0] = text[i];
+
+    if((text[i] != ' ') && (text[i] != '\n'))
+      draw_sprite(str,currentx,currenty);
+
+    switch (text[i])
+    {
+      case 't':
+      case 'i':
+      case 'y':
+        currentx += 6 + 2;
+        break;
+      case 'm':
+        currentx += 14 + 2;
+        break;
+      case 'q':
+      case 'w':
+        currentx += 10 + 2;
+        break;
+      case ' ':
+        currentx += 4 + 2;
+        break;
+      default:
+        currentx += 8 + 2;
+    }
+
+    if(text[i] == '\n')
+    {
+      currentx = x;
+      currenty -= 32;
+    }
+  }
+}
+
 void draw_text(char* text, int x, int y, int fonthandle)
 {
   inreg.r[0] = fonthandle;
