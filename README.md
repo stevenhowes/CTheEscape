@@ -2,15 +2,15 @@
 
 RiscOS Game
 
-All files are in RiscOS formats, suitable for hostfs on RPCEmu. Binary is included in repository to save faffing with Acorn C compiler.
+All files are in RiscOS formats, suitable for hostfs on RPCEmu or Arculator. Binary is included in repository to save faffing with Acorn C compiler.
 
 Tested on:
 
 RPCEmu on Win10 (recompiler) - RiscOS 3.71 on StrongARM with 128MB of RAM, 2MB VRAM
 
-Arculator 2.0 - RiscOS 3.10 emulating Acorn A3000 with 2MB RAM
+Arculator 2.0 - RiscOS 3.10 emulating Acorn A3000 with 1MB RAM
 
-Acorn A3000, 2MB RAM (current build not tested) - performance is rubbish
+Acorn A3000, 2MB RAM
 
 Controls so far:
 
@@ -20,7 +20,7 @@ Left Arrow: Left
 
 Right Arrow: Right
 
-Q: Display debug info (then numbers to select debug action)
+Q: Display debug info (then numbers to select debug action) - Currently non-functioning
 
 Space Bar: Fire phasers
 
@@ -33,7 +33,7 @@ Any Star Trek trademarks, copyrights and intellectual property belongs to Viacom
 
 Known bugs:
 
-No ending
+No 'happy' ending
 
 Flashing cursor in top left
 
