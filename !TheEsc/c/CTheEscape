@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
   screen_clear();
 
   // Mission 1
+  game1_briefing();
+  screen_clear();
+
   game1_setup();
   while(!lastoutcome)
   {

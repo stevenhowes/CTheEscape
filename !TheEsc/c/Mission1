@@ -420,6 +420,7 @@ void game_setup_npcs()
   for(i = 0; i < MAX_NPCS; i++)
   {
     game_respawn_npc(i);
+    NPCS[i].location.Y += 400;
   }
 }
 
@@ -874,7 +875,7 @@ void game1_death()
   {
     sound_composition_tick(clock());
 
-      if(clock() > (tick + 200))
+      if(clock() > (tick + 100))
       {
         if(input_readkey(98))
           sound_composition_stop();
@@ -882,6 +883,26 @@ void game1_death()
   }
 }
 
+void game1_briefing()
+{
+  screen_clear();
+
+  draw_spritetext(
+"~~~~~~~~{chief engineers log - uss archimedes - stardate 1234567890=========================}\n\n\nthe federation has begun diplomatic relations with the planet korell. their unusual position within an asteroid belt \nmeans their planet has to be protected by a deflector shield. the federation has offered to help enhance this shield. \nonce this upgrade was completed we were preparing to leave when we recieved a priority one transmission from the \narchimedes saying a fleet of fighters from the neighbouring planet of durnovaria was en route to torell. it transpires \nthat the deflector shield may also have some military value that was concealed from the federation. the durnovarians \nhave said our shuttle is now considered a military target and will be treated as such. must to get back to the archimedes \nbefore we get dragged further into the conflict between the two planets.\n\n\n~~~~~~~~{==========================================~~~~~~~~=======}"
+, 50, 700);
+
+  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
+
+  tick = clock();
+  while(1)
+  {
+    if(clock() > (tick + 100))
+    {
+      if(input_readkey(98))
+        return;
+    }
+  }
+}
 
 int game1_tick()
 {
