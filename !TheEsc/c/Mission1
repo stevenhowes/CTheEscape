@@ -4,7 +4,7 @@
 #define PLAYER_X_SPEED 10
 #define MAX_NPCS 5
 #define MAX_STARS 10
-#define MAX_PROJECTILES 10
+#define MAX_PROJECTILES 15
 
 //#defene PROFILE(X) lastprofile = clock(); X; printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%s %i\n", #X, (clock() - lastprofile))
 #define PROFILE(X) X
@@ -89,8 +89,8 @@ extern int lasttick;
 enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbprojectiles,dbmax};
 int debugs[dbmax];
 
-enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey,debuggreen,phaserorange1,phaserorange2};
-int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x00ff0000,0x0053ff00,0x00d5ff00};
+enum colour_e{lcars_black,lcars_violet1,debugpink,stargrey,debuggreen,phaserorange1,phaserorange2,tractor1,tractor2,tractor3,tractormax};
+int colours[] = {0x11111100,0xc4727200,0xcc00ff00,0x66666600,0x00ff0000,0x0053ff00,0x00d5ff00,0x2e120600,0x1c100a00,0x75250000,0xbf430a00};
 
 void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy, enum sprite_e spritestart, enum sprite_e spriteend, int damage)
 {
@@ -369,6 +369,8 @@ void game_setup_input()
 
 void game_respawn_npc(int id)
 {
+  if(Player.remainingdistance <= 120000)
+    return;
   NPCS[id].location.X = rand() % DISPLAY_X;
   NPCS[id].location.Y = DISPLAY_Y + (rand() % (DISPLAY_Y/2));
   if((rand() % 10) > 3)
@@ -383,7 +385,7 @@ void game_respawn_npc(int id)
         NPCS[id].idlesprite = durno_ship;
         NPCS[id].sprite = durno_ship;
         NPCS[id].velocity.X = 0;
-        NPCS[id].velocity.Y = (rand() % 3) + 1;
+        NPCS[id].velocity.Y = (rand() % 6) + 1;
         NPCS[id].health = 1000;
         NPCS[id].hitbox_bl.X = 0;
         NPCS[id].hitbox_bl.Y = 0;
@@ -392,14 +394,14 @@ void game_respawn_npc(int id)
         NPCS[id].collideforce = 1000;
         NPCS[id].weaponspritestart = photon1;
         NPCS[id].weaponspriteend = photon2;
-        NPCS[id].fireinterval = 200;
+        NPCS[id].fireinterval = 100;
         NPCS[id].firewidth = 400;
         break;
       case littledurno:
         NPCS[id].idlesprite = durno_ship2;
         NPCS[id].sprite = durno_ship2;
-        NPCS[id].velocity.X = (rand() % 1) - 2;
-        NPCS[id].velocity.Y = (rand() % 2) + 3;
+        NPCS[id].velocity.X = (rand() % 4) + 2;
+        NPCS[id].velocity.Y = (rand() % 4) + 2;
         NPCS[id].health = 300;
         NPCS[id].hitbox_bl.X = 0;
         NPCS[id].hitbox_bl.Y = 0;
@@ -409,7 +411,7 @@ void game_respawn_npc(int id)
         NPCS[id].weaponspritestart = plasma1;
         NPCS[id].weaponspriteend = plasma2;
         NPCS[id].fireinterval = 80;
-        NPCS[id].firewidth = 60;
+        NPCS[id].firewidth = 30;
         break;
     };
 }
@@ -448,6 +450,9 @@ void game_tick_npcs()
          NPCS[i].velocity.X = 1;
         else
          NPCS[i].velocity.X = -1;
+
+        // Make the accelerate if they're close
+        NPCS[i].location.Y -= (tick - lasttick) * NPCS[i].velocity.Y;
       }
     }
 
@@ -724,11 +729,16 @@ void game_tick_input()
 
   // Q
   if(input_readkey(16))
-    Player.integrity = 1000;
+    Player.remainingdistance = 0;
 //    debugs[dbbase] = 1;
 
-  if(tick > Player.nextidlesprite)
-    Player.sprite = Player.idlesprite;
+
+
+  // E
+  if(input_readkey(33))
+  {
+    Player.remainingdistance = 120000;
+  }
 
   // Right arrow
   if(input_readkey(121))
@@ -796,6 +806,9 @@ void game1_setup()
 
 void game_tick_player()
 {
+  if(tick > Player.nextidlesprite)
+    Player.sprite = Player.idlesprite;
+
   Player.remainingdistance -= Player.velocity * (tick - lasttick);
 
   if(Player.shields < 100)
@@ -884,6 +897,87 @@ void game1_death()
   }
 }
 
+void game_tick_npcs_scatter()
+{
+  int i;
+  for(i = 0; i < MAX_NPCS; i++)
+  {
+    NPCS[i].location.Y -= (tick - lasttick) * NPCS[i].velocity.Y;
+    if(NPCS[i].velocity.X == 0)
+    {
+      if(NPCS[i].location.X > Player.location.X)
+        NPCS[i].velocity.X = 1;
+      else
+        NPCS[i].velocity.X = -1;
+    }
+    NPCS[i].location.X += (tick - lasttick) * ((NPCS[i].velocity.X * 3));
+  
+    if(NPCS[i].health <= 0)
+    {
+      if(NPCS[i].sprite == NPCS[i].idlesprite)
+      {
+        NPCS[i].collidable = 0;
+        NPCS[i].sprite = explode_start;
+        NPCS[i].explodenextframe = tick + 4;
+        sound_play(1,-5,0,100);
+        sound_play(3,-15,0,1000);
+        sound_play(2,-10,1,100);
+      }
+    }
+  }
+}
+
+void game_draw_tractor()
+{
+  int tractorx;
+  int colour;
+
+  Player.location.Y += PLAYER_X_SPEED * (tick - lasttick) / 6;
+
+  for(tractorx = 0; tractorx <= (Player.hitbox_tr.X - Player.hitbox_bl.X); tractorx++)
+  {
+      colour = tractor1;
+      colour += rand() % (tractormax - tractor1);
+      graphics_colour(colours[colour]);
+      if(tractorx % 2 == 0)
+      {
+        draw_line(
+        (Player.location.X + Player.hitbox_bl.X) + tractorx,
+        Player.location.Y + (Player.hitbox_tr.Y/2),
+        DISPLAY_X/2,
+        DISPLAY_Y + 500
+        );  
+      }else{
+        draw_dotted_line(
+        (Player.location.X + Player.hitbox_bl.X) + tractorx,
+        Player.location.Y + (Player.hitbox_tr.Y/2),
+        DISPLAY_X/2,
+        DISPLAY_Y + 200
+        );
+      }
+  }
+}
+
+void game_tick_endingcentre()
+{
+  if((Player.location.X + Player.hitbox_bl.X + (Player.hitbox_tr.X/2)) < ((DISPLAY_X/2)-50))
+  {
+    Player.location.X += PLAYER_X_SPEED * (tick - lasttick);
+    Player.sprite = player_shipr;
+    Player.nextidlesprite = tick + 15;
+  }
+  else if((Player.location.X + Player.hitbox_bl.X + (Player.hitbox_tr.X/2)) > ((DISPLAY_X/2)+50))
+  {
+    Player.location.X -= PLAYER_X_SPEED * (tick - lasttick);
+    Player.sprite = player_shipr;
+    Player.nextidlesprite = tick + 15;
+  }
+  else
+  {
+    Player.location.X = (DISPLAY_X/2);
+  }
+}
+
 void game1_briefing()
 {
   screen_clear();
@@ -907,6 +1001,37 @@ void game1_briefing()
   }
 }
 
+void game1_victory()
+{
+  screen_clear();
+
+  draw_spritetext(
+"~~~~~~~~{chief engineers log - uss archimedes - stardate 1234567890 ~~==========~~===============}\n\n\nour shuttlepod has been rescued by the uss archimedes - but our job here isn't done. the archimedes is now under attack \nfrom the durnovarians, and recoverying the shuttle has come at a cost. Several major systems are now offline.\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{==========================================~~~~~~~~=======}"
+, 50, 950);
+
+  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
+
+  screen_flipbuffer();
+
+  tick = clock();
+  while(1)
+  {
+    if(clock() > (tick + 100))
+    {
+      if(input_readkey(98))
+        return;
+    }
+  }
+}
+
+void game_draw_comms(char* msg)
+{
+    draw_sprite("commspanel",4,DISPLAY_Y-164);
+  draw_spritetext(
+msg
+, 80, DISPLAY_Y-80);
+}
+
 int game1_tick()
 {
   lasttick = tick;
@@ -915,9 +1040,28 @@ int game1_tick()
   screen_flipbuffer();
   screen_clear();
 
-  if(Player.integrity > 200)
+  if(Player.remainingdistance <= 0)
   {
     return 2;
+  }else if (Player.remainingdistance <= 120000)
+  {
+    if(Player.remainingdistance <= 80000)
+    {
+      PROFILE(game_draw_tractor());
+    }
+
+    game_tick_endingcentre();
+    // Run a smaller subset of the norm near the ending
+    PROFILE(game_tick_stars());
+    PROFILE(game_tick_player());
+    PROFILE(game_tick_npcs_scatter());
+    PROFILE(game_tick_projectiles());
+    PROFILE(game_draw_stars());
+    PROFILE(game_draw_player());
+    PROFILE(game_draw_npcs());
+    PROFILE(game_draw_projectiles());
+    game_draw_comms("Shuttlepod Phoebe - this is the USS Archimedes.\nPower down your engines and stand by for\nimmediate tractor beam recovery.");
+    return 0;
   }
   else if(Player.integrity > 0)
   {
@@ -927,7 +1071,6 @@ int game1_tick()
     PROFILE(game_tick_npcs());
     PROFILE(game_tick_collider());
     PROFILE(game_tick_player_targets());
-    PROFILE(game_tick_npcs());
     PROFILE(game_tick_projectiles());
     PROFILE(game_draw_stars());
     PROFILE(game_draw_player());

@@ -22,6 +22,8 @@ Right Arrow: Right
 
 Q: Skip level (will be removed)
 
+E: Move closer to level end
+
 Space Bar: Fire phasers
 
 
