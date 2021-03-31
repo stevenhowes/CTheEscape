@@ -20,10 +20,6 @@ Left Arrow: Left
 
 Right Arrow: Right
 
-Q: Skip level (will be removed)
-
-E: Move closer to level end
-
 Space Bar: Fire phasers
 
 
@@ -35,11 +31,9 @@ Any Star Trek trademarks, copyrights and intellectual property belongs to Viacom
 
 Known bugs:
 
-No 'happy' ending
+- Flashing cursor in top left
 
-Flashing cursor in top left
-
-Sub-optimal sprites (squished rather than re-drawn as mode 15)
+- Sub-optimal sprites (squished rather than re-drawn as mode 15)
 plasma1-2
 explode_ship1-4
 tng_te
