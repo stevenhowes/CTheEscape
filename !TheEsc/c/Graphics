@@ -223,7 +223,7 @@ void draw_spritetext(char* text, int x, int y)
         currentx += 8 + 4;
         break;
       case 'm':
-        currentx += 28 + 4;
+        currentx += 26 + 4;
         break;
       case 'q':
       case 'w':
