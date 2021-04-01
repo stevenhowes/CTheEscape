@@ -934,7 +934,7 @@ void game_draw_tractor()
 
   Player.location.Y += PLAYER_X_SPEED * (tick - lasttick) / 6;
 
-  for(tractorx = 0; tractorx <= (Player.hitbox_tr.X - Player.hitbox_bl.X); tractorx++)
+  for(tractorx = 0; tractorx <= (Player.hitbox_tr.X - Player.hitbox_bl.X); tractorx = tractorx + 4)
   {
       colour = tractor1;
       colour += rand() % (tractormax - tractor1);
@@ -983,7 +983,7 @@ void game1_briefing()
   screen_clear();
 
   draw_spritetext(
-"~~~~~~~~{chief engineers log - uss archimedes - stardate 1234567890 ~~==========~~===============}\n\n\nthe federation has begun diplomatic relations with the planet korell. their unusual position within an asteroid belt \nmeans their planet has to be protected by a deflector shield. the federation has offered to help enhance this shield. \nonce this upgrade was completed we were preparing to leave when we recieved a priority one transmission from the \narchimedes saying a fleet of fighters from the neighbouring planet of durnovaria was en route to torell. it transpires \nthat the deflector shield may also have some military value that was concealed from the federation. the durnovarians \nhave said our shuttle is now considered a military target and will be treated as such. must to get back to the archimedes \nbefore we get dragged further into the conflict between the two planets.\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{==========================================~~~~~~~~=======}"
+"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nthe federation has begun diplomatic relations with the planet \nkorell. their unusual position within an asteroid belt means \ntheir planet has to be protected by a deflector shield. the \nfederation has offered to help enhance this shield. once this \nupgrade was completed we were preparing to leave when we \nrecieved a priority one transmission from the archimedes \nsaying a fleet of fighters from the neighbouring planet of \ndurnovaria was en route to torell. it transpires that the planet's \nshield may also have some military value that was concealed \nfrom the federation. the durnovarians have said our shuttle is \nnow considered a military target and will be treated as such. \nwe must to get back to the archimedes before we get dragged \nfurther into the conflict between the two planets.\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
 , 50, 950);
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
@@ -1006,7 +1006,7 @@ void game1_victory()
   screen_clear();
 
   draw_spritetext(
-"~~~~~~~~{chief engineers log - uss archimedes - stardate 1234567890 ~~==========~~===============}\n\n\nour shuttlepod has been rescued by the uss archimedes - but our job here isn't done. the archimedes is now under attack \nfrom the durnovarians, and recoverying the shuttle has come at a cost. Several major systems are now offline.\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{==========================================~~~~~~~~=======}"
+"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nour shuttlepod has been rescued by the uss archimedes - but our \njob here isn't done. the archimedes is now under attack from the \ndurnovarians, and recoverying the shuttle has come at a cost. \nSeveral major systems are now offline.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
 , 50, 950);
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);

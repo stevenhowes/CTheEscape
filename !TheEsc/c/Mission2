@@ -77,7 +77,7 @@ void game2_briefing()
   screen_clear();
 
   draw_spritetext(
-"~~~~~~~~{chief engineers log - uss archimedes - stardate 1234567890 ~~==========~~===============}\n\n\nYour mission is to be dead until I make mission 2. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{==========================================~~~~~~~~=======}"
+"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nYour mission is to be dead until I make mission 2. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
 , 50, 950);
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);

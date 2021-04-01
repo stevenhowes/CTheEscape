@@ -11,6 +11,7 @@ _kernel_swi_regs outreg;
 
 // Sprite buffer
 unsigned char *buffer;
+unsigned char *fontbuffer;
 extern int screen;
 extern struct CompositionElement composition[128];
 extern int current_element;
@@ -46,13 +47,20 @@ int main(int argc, char *argv[])
 
   // Load sprite library
   load_sprites("Spr");
+  load_font("Font");
 
+#ifndef SKIP_INTRO
   // Intro titles + music
   intro();
+#endif
 
+  // Clear both buffers or we get gibberish
+  screen_flipbuffer();
+  screen_clear();
   screen_flipbuffer();
   screen_clear();
 
+#ifndef SKIP_MISSION1
   // Mission 1
   while(lastoutcome == 1)
   {
@@ -67,7 +75,9 @@ int main(int argc, char *argv[])
     lastoutcome = outcome;
   }
   game1_victory();
+#endif
 
+#ifndef SKIP_MISSION2
   lastoutcome = 1;
 
   // Mission 2
@@ -83,7 +93,7 @@ int main(int argc, char *argv[])
     }
     lastoutcome = outcome;
   }
-
+#endif
 
   free(buffer);
 
