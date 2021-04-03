@@ -16,6 +16,8 @@ _kernel_swi_regs outreg;
 // Sprite buffer
 unsigned char *buffer;
 unsigned char *fontbuffer;
+unsigned char *tilebuffer;
+
 extern int screen;
 extern struct CompositionElement composition[128];
 extern int current_element;
@@ -50,8 +52,8 @@ int main(int argc, char *argv[])
   screen_clear();
 
   // Load sprite library
-  load_sprites("Spr");
-  load_font("Font");
+  load_sprites("Spr",&buffer);
+  load_sprites("Font",&fontbuffer);
 
 #ifndef SKIP_INTRO
   // Intro titles + music
@@ -84,13 +86,15 @@ int main(int argc, char *argv[])
 #ifndef SKIP_MISSION2
   lastoutcome = 1;
 
+  load_sprites("Tiles",&tilebuffer);
+
   // Mission 2
   while(lastoutcome == 1)
   {
     outcome = 0;
     game2_briefing();
     screen_clear();
-    //game2_setup();
+    game2_setup();
     while(!outcome)
     {
       outcome = game2_tick();

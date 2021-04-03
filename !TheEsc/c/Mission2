@@ -1,10 +1,60 @@
 #include "Graphics.h"
-
-//#defene PROFILE(X) lastprofile = clock(); X; printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t%s %i\n", #X, (clock() - lastprofile))
-#define PROFILE(X) X
+#include "swis.h"
+#include <kernel.h>
 
 extern int tick;
 extern int lasttick;
+extern int screen;
+
+extern _kernel_swi_regs inreg;
+extern _kernel_swi_regs outreg;
+
+
+#define TILESX 10
+#define TILESY 10
+
+// map[0] is the 'master', [1] and [2] represents what is currently
+// believed to be displayed in the corresponding (+1) screen buffer
+// and we run a compare to see if re-drawing is needed. 0xFF is used
+// for a re-draw being required (so it's set on the tile under the player
+unsigned char map[3][TILESX][TILESY];
+
+char tilenamebuffer[4];
+char textbuffer[63];
+
+struct EntityLocation_s {
+  short signed int X,Y;
+};
+
+struct TilePlayer_s {
+  struct EntityLocation_s location;
+  struct EntityLocation_s hitbox_bl;
+  struct EntityLocation_s hitbox_tr;
+};
+
+struct TilePlayer_s TilePlayer;
+
+void game2_loadmap(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 13;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) map[0];
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
 
 void game2_death()
 {
@@ -77,7 +127,7 @@ void game2_briefing()
   screen_clear();
 
   draw_spritetext(
-"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nYour mission is to be dead until I make mission 2. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
+"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nyour mission is to be dead until i make mission 2. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
 , 50, 950);
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
@@ -95,23 +145,112 @@ void game2_briefing()
   }
 }
 
+void game2_setup()
+{
+  screen_flipbuffer();
+  screen_clear();
+  screen_flipbuffer();
+  screen_clear();
+  TilePlayer.location.X = 0;
+  TilePlayer.location.Y = 0;
+  TilePlayer.hitbox_bl.X = 0;
+  TilePlayer.hitbox_bl.Y = 0;
+  TilePlayer.hitbox_tr.X = 60;
+  TilePlayer.hitbox_tr.Y = 50;
+  game2_loadmap("map");
+}
+
+void game2_tick_input()
+{
+  int x,y;
+  // Up arrow
+  if(input_readkey(57))
+  {
+    TilePlayer.location.Y += 1 * (tick - lasttick);
+  }
+
+  // Down arrow
+  if(input_readkey(41))
+  {
+    TilePlayer.location.Y -= 1 * (tick - lasttick);
+  }
+  
+  // Right arrow
+  if(input_readkey(121))
+  {
+    TilePlayer.location.X += 1 * (tick - lasttick);
+  }
+
+  // Left arrow
+  if(input_readkey(25))
+  {
+    TilePlayer.location.X -= 1 * (tick - lasttick);
+  }
+
+  // Q
+  if(input_readkey(16))
+  {
+    for(x = 0; x < TILESX; x++)
+    {
+      for(y = 0; y < TILESY; y++)
+      {
+        map[0][x][y] = 1;
+      }
+    }
+  }
+}
+
 int game2_tick()
 {
+  int x;
+  int y;
+  int udt = 0;
   lasttick = tick;
   tick = clock();
 
   screen_flipbuffer();
-  screen_clear();
 
-  if(0)
+  if(1)
   {
+    for(x = 0; x < TILESX; x++)
+    {
+      for(y = 0; y < TILESY; y++)
+      {
+        if(game_hitbox_collide(
+        (TilePlayer.location.X + TilePlayer.hitbox_bl.X),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
+        (TilePlayer.hitbox_tr.X - TilePlayer.hitbox_bl.X),(TilePlayer.hitbox_tr.Y - TilePlayer.hitbox_bl.Y),
+        x*100,y*100,
+        100,100
+        ))
+        {
+          map[1][x][y] = 255;
+          map[2][x][y] = 255;
+        }
+
+        if(map[0][x][y] ^ map[screen+1][x][y])
+        {
+          map[screen+1][x][y] = map[0][x][y];
+          sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+          draw_tile(tilenamebuffer,x*100,y*100);
+          udt++;
+        }
+      }
+
+      //draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
+
+      //sprintf(textbuffer,"CPF: %i\nUDT: %i",(tick-lasttick), udt);
+      //draw_spritetext(textbuffer, 1070, 950);
+    }
+
+    game2_tick_input();
+
+    draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
+
     return 0;
   }else{
-    screen_flipbuffer();
+/*    screen_flipbuffer();
     screen_clear();
     game2_death();
-    return 1;
+    return 1;*/
   }
-  
-
 }

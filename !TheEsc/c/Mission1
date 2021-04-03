@@ -1006,7 +1006,7 @@ void game1_victory()
   screen_clear();
 
   draw_spritetext(
-"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nour shuttlepod has been rescued by the uss archimedes - but our \njob here isn't done. the archimedes is now under attack from the \ndurnovarians, and recoverying the shuttle has come at a cost. \nSeveral major systems are now offline.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
+"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nour shuttlepod has been rescued by the uss archimedes - but our \njob here isn't done. the archimedes is now under attack from the \ndurnovarians, and recoverying the shuttle has come at a cost. \nseveral major systems are now offline.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
 , 50, 950);
 
   draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
@@ -1060,7 +1060,7 @@ int game1_tick()
     PROFILE(game_draw_player());
     PROFILE(game_draw_npcs());
     PROFILE(game_draw_projectiles());
-    game_draw_comms("Shuttlepod Phoebe - this is the USS Archimedes.\nPower down your engines and stand by for\nimmediate tractor beam recovery.");
+    game_draw_comms("shuttlepod phoebe - this is the USS Archimedes.\npower down your engines and stand by for\nimmediate tractor beam recovery.");
     return 0;
   }
   else if(Player.integrity > 0)
