@@ -5,5 +5,6 @@ struct CompositionElement {
   unsigned char Note;
   signed char Volume;
   unsigned char Channel;
+  /*unsigned char word alignment*/
   unsigned short int Length;
 };

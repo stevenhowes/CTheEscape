@@ -21,6 +21,35 @@ void sound_on()
   _kernel_swi(Sound_Enable,&inreg,&outreg);
 }
 
+void sound_composition_load(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 13;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(composition))
+  {
+    screen_nobuffer();
+    printf("Composition exceeds %d bytes (%d bytes)",sizeof(composition),length);
+    exit(0);
+  }
+  
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) composition;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
 void sound_voices(int num)
 {
   inreg.r[0] = num;
@@ -73,6 +102,17 @@ void sound_composition_element_add(int start, int channel, int note, int length)
   composition[current_element].Length = length;
   current_element++;
 }
+void sound_composition_save(char *filename)
+{
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) composition;
+  inreg.r[5] = (int) composition+(sizeof(composition[0]) * COMPOSITION_MAX);
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+}
 
 void sound_composition_debug()
 {
@@ -93,8 +133,6 @@ void sound_composition_debug()
       );
     }
   }
-  
-  printf("%i elements at %i bytes each\n",current_element,sizeof(composition[0]));
 
   printf("------------------------------\n");
 }

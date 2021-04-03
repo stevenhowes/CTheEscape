@@ -74,40 +74,9 @@ void game2_death()
   sound_set_voice(3,"WaveSynth-Beep");
   sound_set_voice(4,"WaveSynth-Beep");
   sound_composition_init();
-  
-  currentstart += 100;
-  sound_composition_element_add(currentstart,1,sound_note("D2"),150);
-  currentstart += 100;
-  sound_composition_element_add(currentstart,2,sound_note("G2"),200);
-  currentstart += 200;
-  sound_composition_element_add(currentstart,3,sound_note("B3"),75);
-  currentstart += 40;
-  sound_composition_element_add(currentstart,4,sound_note("G2"),75);
-  currentstart += 50;
-  sound_composition_element_add(currentstart,2,sound_note("B3"),200);
-  currentstart += 200;
-  sound_composition_element_add(currentstart,1,sound_note("A3"),100);
-  currentstart += 100;
-  sound_composition_element_add(currentstart,3,sound_note("G2"),150);
-  currentstart += 150;
-  sound_composition_element_add(currentstart,2,sound_note("E2"),100);
-  currentstart += 100;
-  sound_composition_element_add(currentstart,1,sound_note("D2"),150);
-  currentstart += 150;
-  sound_composition_element_add(currentstart,3,sound_note("D2"),150);
-  currentstart += 100;
-  sound_composition_element_add(currentstart,4,sound_note("G2"),150);
-  currentstart += 150;
-  sound_composition_element_add(currentstart,1,sound_note("B3"),75);
-  currentstart += 40;
-  sound_composition_element_add(currentstart,2,sound_note("G2"),75);
-  currentstart += 40;
-  sound_composition_element_add(currentstart,3,sound_note("B3"),150);
-  currentstart += 150;
-  sound_composition_element_add(currentstart,4,sound_note("A3"),130);
-  currentstart += 100;
-  sound_composition_element_add(currentstart,1,sound_note("G2"),200);
-  currentstart += 300;
+
+  sound_composition_load("cmpagrac");
+
   tick = clock();
 
   sound_composition_start(clock());
