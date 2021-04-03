@@ -12,6 +12,7 @@ extern unsigned char *tilebuffer;
 
 int screen = 1;
 
+extern void screen_nobuffer();
 // Loads sprite file into buffer
 void load_sprites(char* filename, unsigned char **buffername)
 {
@@ -34,7 +35,8 @@ void load_sprites(char* filename, unsigned char **buffername)
 
   // Stops us trying to mallocsomething mad if file is too big.
   if(length > 200000)
-  {         
+  {
+    screen_nobuffer();
     printf("Sprite file %s seems unreasonably large at %i bytes",filename, length);
     exit(0);
   }
@@ -44,6 +46,7 @@ void load_sprites(char* filename, unsigned char **buffername)
 
   if(buffername==NULL)
   {
+    screen_nobuffer();
     printf("Couldn't malloc %i bytes for sprite buffer",length);
     exit(0);
   }
@@ -85,6 +88,7 @@ void display_mode(int mode)
   inreg.r[1] = (pitch * height * 2) - outreg.r[1];
   if (_kernel_swi(OS_ChangeDynamicArea, &inreg, &outreg) != NULL)
   {
+    screen_nobuffer();
     printf("Couldn't OS_ChangeDynamicArea");
     exit(0);
   }

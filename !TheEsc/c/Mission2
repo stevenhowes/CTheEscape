@@ -46,6 +46,13 @@ void game2_loadmap(char* filename)
   // Length will be in R4 if it exists
   length = outreg.r[4];
 
+  if(length > sizeof(map[0]))
+  {
+    screen_nobuffer();
+    printf("Map exceeds %d bytes (%d bytes)",sizeof(map[0]),length);
+    exit(0);
+  }
+  
   // Attempt to get file info
   inreg.r[0] = 16;
   inreg.r[1] = (int) filename;
