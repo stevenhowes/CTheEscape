@@ -29,6 +29,7 @@ extern int screen;
 
 extern int game1_tick();
 extern void game1_setup();
+extern void screen_nobuffer();
 
 int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
 {
@@ -41,10 +42,24 @@ int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, 
   return 0;
 }
 
+void exitfunc () {
+  screen_flipbuffer();
+  screen_clear();
+  screen_flipbuffer();
+  screen_clear();
+  screen_nobuffer();
+  free(buffer);
+  free(fontbuffer);
+  free(tilebuffer);
+}
+
 int main(int argc, char *argv[])
 {
   int lastoutcome = 1;
   int outcome = 0;
+  
+  atexit(exitfunc);
+
   sound_on();
 
   // Set initial display mode
