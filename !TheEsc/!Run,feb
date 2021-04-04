@@ -1,5 +1,5 @@
 Set TheEsc$Dir <Obey$Dir>
 IconSprites <TheEsc$Dir>.!Sprites
-WimpSlot -min 128k -max 128k
+WimpSlot -min 256k -max 256k
 Dir <TheEsc$Dir>
 Run <TheEsc$Dir>.!RunImage
