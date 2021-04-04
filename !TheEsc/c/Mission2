@@ -18,6 +18,7 @@ extern _kernel_swi_regs outreg;
 // and we run a compare to see if re-drawing is needed. 0xFF is used
 // for a re-draw being required (so it's set on the tile under the player
 unsigned char map[3][TILESX][TILESY];
+unsigned char fullmap[10000];
 
 char tilenamebuffer[4];
 char textbuffer[63];
@@ -30,6 +31,7 @@ struct TilePlayer_s {
   struct EntityLocation_s location;
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
+  struct EntityLocation_s mapoffset;
 };
 
 struct TilePlayer_s TilePlayer;
@@ -46,17 +48,18 @@ void game2_loadmap(char* filename)
   // Length will be in R4 if it exists
   length = outreg.r[4];
 
-  if(length > sizeof(map[0]))
+  if(length > sizeof(fullmap))
   {
-    screen_nobuffer();
-    printf("Map exceeds %d bytes (%d bytes)",sizeof(map[0]),length);
-    exit(0);
+    // TODO: Work out why real machine doesn't appear to read size and gives object type 19
+    /*screen_nobuffer();
+    printf("Map exceeds %d bytes (%d bytes) Object Type %d",sizeof(fullmap),length,outreg.r[0]);
+    exit(0);*/
   }
   
   // Attempt to get file info
   inreg.r[0] = 16;
   inreg.r[1] = (int) filename;
-  inreg.r[2] = (int) map[0];
+  inreg.r[2] = (int) fullmap;
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
@@ -121,19 +124,38 @@ void game2_briefing()
   }
 }
 
+void game2_fillmap(int xoffset, int yoffset)
+{
+  memcpy(map[0][0],fullmap+yoffset+(xoffset*100),10);
+  memcpy(map[0][1],fullmap+yoffset+(xoffset*100)+100,10);
+  memcpy(map[0][2],fullmap+yoffset+(xoffset*100)+200,10);
+  memcpy(map[0][3],fullmap+yoffset+(xoffset*100)+300,10);
+  memcpy(map[0][4],fullmap+yoffset+(xoffset*100)+400,10);
+  memcpy(map[0][5],fullmap+yoffset+(xoffset*100)+500,10);
+  memcpy(map[0][6],fullmap+yoffset+(xoffset*100)+600,10);
+  memcpy(map[0][7],fullmap+yoffset+(xoffset*100)+700,10);
+  memcpy(map[0][8],fullmap+yoffset+(xoffset*100)+800,10);
+  memcpy(map[0][9],fullmap+yoffset+(xoffset*100)+900,10);
+}
+
 void game2_setup()
 {
   screen_flipbuffer();
   screen_clear();
   screen_flipbuffer();
   screen_clear();
-  TilePlayer.location.X = 0;
-  TilePlayer.location.Y = 0;
+  TilePlayer.location.X = 100;
+  TilePlayer.location.Y = 100;
   TilePlayer.hitbox_bl.X = 0;
   TilePlayer.hitbox_bl.Y = 0;
   TilePlayer.hitbox_tr.X = 60;
   TilePlayer.hitbox_tr.Y = 50;
-  game2_loadmap("map");
+  memset(map[0],0xFF,100);
+  memset(map[1],0xFF,100);
+  memset(map[2],0xFF,100);
+
+  game2_loadmap("mission2");
+  game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
 void game2_tick_input()
@@ -142,25 +164,45 @@ void game2_tick_input()
   // Up arrow
   if(input_readkey(57))
   {
-    TilePlayer.location.Y += 1 * (tick - lasttick);
+    TilePlayer.location.Y += 3 * (tick - lasttick);
+    if(TilePlayer.location.Y > (9*100))
+    {
+      TilePlayer.location.Y = 100;
+      TilePlayer.mapoffset.Y += 10;
+    }
   }
 
   // Down arrow
   if(input_readkey(41))
   {
-    TilePlayer.location.Y -= 1 * (tick - lasttick);
+    TilePlayer.location.Y -= 3 * (tick - lasttick);
+    if(TilePlayer.location.Y < (1*100))
+    {
+      TilePlayer.location.Y = 900;
+      TilePlayer.mapoffset.Y -= 10;
+    }
   }
   
   // Right arrow
   if(input_readkey(121))
   {
-    TilePlayer.location.X += 1 * (tick - lasttick);
+    TilePlayer.location.X += 3 * (tick - lasttick);
+    if(TilePlayer.location.X > (9*100))
+    {
+      TilePlayer.location.X = 100;
+      TilePlayer.mapoffset.X += 10;
+    }
   }
 
   // Left arrow
   if(input_readkey(25))
   {
-    TilePlayer.location.X -= 1 * (tick - lasttick);
+    TilePlayer.location.X -= 3 * (tick - lasttick);
+    if(TilePlayer.location.X < (1*100))
+    {
+      TilePlayer.location.X = 900;
+      TilePlayer.mapoffset.X -= 10;
+    }
   }
 
   // Q
@@ -188,6 +230,7 @@ int game2_tick()
 
   if(1)
   {
+    game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     for(x = 0; x < TILESX; x++)
     {
       for(y = 0; y < TILESY; y++)
