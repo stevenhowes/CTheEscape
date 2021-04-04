@@ -15,7 +15,7 @@ void intro()
   sound_set_voice(4,"WaveSynth-Beep");
   sound_composition_init();
 
-  sound_composition_load("cmpintro");
+  sound_composition_load("music.cmpintro");
  
   tick = clock();
 

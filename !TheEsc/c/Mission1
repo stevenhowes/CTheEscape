@@ -845,7 +845,7 @@ void game1_death()
   sound_set_voice(4,"WaveSynth-Beep");
   sound_composition_init();
 
-  sound_composition_load("cmpagrac");
+  sound_composition_load("music.cmpagrac");
 
   tick = clock();
 
