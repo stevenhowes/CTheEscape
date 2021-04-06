@@ -28,7 +28,7 @@ unsigned char *tilebuffer;
 int tick = 0;
 int lasttick = 0;
 extern int screen;
-
+int clipboard = 0;
 extern void screen_nobuffer();
 
 
@@ -109,8 +109,8 @@ void game2_setup()
   screen_clear();
   screen_flipbuffer();
   screen_clear();
-  TilePlayer.location.X = 100;
-  TilePlayer.location.Y = 100;
+  TilePlayer.location.X = 50;
+  TilePlayer.location.Y = 50;
   TilePlayer.hitbox_bl.X = 0;
   TilePlayer.hitbox_bl.Y = 0;
   TilePlayer.hitbox_tr.X = 60;
@@ -129,7 +129,7 @@ void game2_tick_input()
   // Up arrow
   if(input_readkey(57))
   {
-    TilePlayer.location.Y += 3 * (tick - lasttick);
+    TilePlayer.location.Y += 6 * (tick - lasttick);
     if(TilePlayer.location.Y > (950))
     {
       TilePlayer.location.Y = 100;
@@ -140,7 +140,7 @@ void game2_tick_input()
   // Down arrow
   if(input_readkey(41))
   {
-    TilePlayer.location.Y -= 3 * (tick - lasttick);
+    TilePlayer.location.Y -= 6 * (tick - lasttick);
     if(TilePlayer.location.Y < (10))
     {
       TilePlayer.location.Y = 900;
@@ -151,7 +151,7 @@ void game2_tick_input()
   // Right arrow
   if(input_readkey(121))
   {
-    TilePlayer.location.X += 3 * (tick - lasttick);
+    TilePlayer.location.X += 6 * (tick - lasttick);
     if(TilePlayer.location.X > (950))
     {
       TilePlayer.location.X = 100;
@@ -162,7 +162,7 @@ void game2_tick_input()
   // Left arrow
   if(input_readkey(25))
   {
-    TilePlayer.location.X -= 3 * (tick - lasttick);
+    TilePlayer.location.X -= 6 * (tick - lasttick);
     if(TilePlayer.location.X < (10))
     {
       TilePlayer.location.X = 900;
@@ -189,12 +189,33 @@ void game2_tick_input()
       readmodkey = tick + 10;
     }
   }
+
+  // C
+  if(input_readkey(82))
+  {
+    if(tick > readmodkey)
+    {
+      clipboard = fullmap[TilePlayer.rawtile];
+      readmodkey = tick + 10;
+    }
+  }
+
+  // p
+  if(input_readkey(55))
+  {
+    if(tick > readmodkey)
+    {
+      fullmap[TilePlayer.rawtile] = clipboard;
+      readmodkey = tick + 10;
+    }
+  }
 }
 
 int game2_tick()
 {
   int x;
   int y;
+  int i;
   int udt = 0;
   lasttick = tick;
   tick = clock();
@@ -203,14 +224,23 @@ int game2_tick()
 
   if(1)
   {
+    screen_clear();
     game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     for(x = 0; x < TILESX; x++)
     {
       for(y = 0; y < TILESY; y++)
       {
+        if(1/*map[0][x][y] ^ map[screen+1][x][y]*/)
+        {
+          map[screen+1][x][y] = map[0][x][y];
+          sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+          draw_tile(tilenamebuffer,x*100,y*100);
+          udt++;
+        }
+        
         if(game_hitbox_collide(
-        (TilePlayer.location.X + TilePlayer.hitbox_bl.X),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
-        (TilePlayer.hitbox_tr.X - TilePlayer.hitbox_bl.X),(TilePlayer.hitbox_tr.Y - TilePlayer.hitbox_bl.Y),
+        (TilePlayer.location.X),(TilePlayer.location.Y),
+        1,1,
         x*100,y*100,
         100,100
         ))
@@ -219,15 +249,14 @@ int game2_tick()
           map[2][x][y] = 255;
           TilePlayer.localtile.X = x;
           TilePlayer.localtile.Y = y;
+          if(screen)
+           draw_sprite("select1",x*100,y*100);
+
+            else
+          draw_sprite("select2",x*100,y*100);
         }
 
-        if(map[0][x][y] ^ map[screen+1][x][y])
-        {
-          map[screen+1][x][y] = map[0][x][y];
-          sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
-          draw_tile(tilenamebuffer,x*100,y*100);
-          udt++;
-        }
+
       }
     }
 
@@ -239,8 +268,36 @@ int game2_tick()
 
     game2_tick_input();
 
-    draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
+    draw_sprite("cursor",TilePlayer.location.X,TilePlayer.location.Y);
 
+    x = 1100;
+    y = 600;
+    for(i = (fullmap[TilePlayer.rawtile] - 3); i <= (fullmap[TilePlayer.rawtile] + 3); i++)
+    {
+      if((i >=0) && (i <= 255))
+      {
+      sprintf(tilenamebuffer,"%i",i);
+      draw_tile(tilenamebuffer,x,y);
+      
+      sprintf(textbuffer,"%d",i);
+      draw_spritetext(textbuffer, x-60, y+30);
+    
+      if(i == fullmap[TilePlayer.rawtile])
+        draw_sprite("select1",x,y);
+      }
+      y = y - 100;
+    }
+
+    x = 1180;
+    y = 750;
+  
+      sprintf(tilenamebuffer,"%i",clipboard);
+      draw_tile(tilenamebuffer,x,y);
+        draw_sprite("select1",x,y);
+
+      draw_spritetext("Clipboard", x-174, y+30);
+    
+    
     return 0;
   }else{
 /*    screen_flipbuffer();

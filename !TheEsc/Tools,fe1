@@ -57,6 +57,12 @@ o.MapEdit:	C:h.kernel
 o.MapEdit:	C:h.kernel
 o.MapEdit:	h.Sound
 o.MapEdit:	h.Graphics
+o.MapEdit:	c.MapEdit
+o.MapEdit:	C:h.swis
+o.MapEdit:	C:h.kernel
+o.MapEdit:	C:h.kernel
+o.MapEdit:	h.Sound
+o.MapEdit:	h.Graphics
 o.Graphics:	c.Graphics
 o.Graphics:	C:h.swis
 o.Graphics:	C:h.kernel
