@@ -1,17 +1,43 @@
-#include "Graphics.h"
+#include <stdio.h>
 #include "swis.h"
 #include <kernel.h>
+#include <time.h>
+#include "Sound.h"
+#include "Graphics.h"
+
+/********************************************\
+Slightly hacked up 'Mission2' as a map editor
+\********************************************/
 
 extern int tick;
 extern int lasttick;
 extern int screen;
 
-extern _kernel_swi_regs inreg;
-extern _kernel_swi_regs outreg;
-
-
 #define TILESX 10
 #define TILESY 10
+
+// SWI Registers
+_kernel_swi_regs inreg;
+_kernel_swi_regs outreg;
+
+// Sprite buffer
+unsigned char *buffer;
+unsigned char *fontbuffer;
+unsigned char *tilebuffer;
+
+extern int screen;
+extern struct CompositionElement composition[128];
+extern int current_element;
+int lastprofile = 0;
+
+int tick = 0;
+int lasttick = 0;
+extern int screen;
+
+extern int game1_tick();
+extern void game1_setup();
+extern void screen_nobuffer();
+
 
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
@@ -26,6 +52,8 @@ char textbuffer[63];
 struct EntityLocation_s {
   short signed int X,Y;
 };
+
+int readmodkey = 0;
 
 struct TilePlayer_s {
   struct EntityLocation_s location;
@@ -66,64 +94,6 @@ void game2_loadmap(char* filename)
 
   _kernel_swi(OS_File,&inreg,&outreg);
  
-}
-
-void game2_death()
-{
-  int currentstart = 0;
-  int introframe = 0;
-  sound_voices(4);
-
-  sound_set_voice(1,"WaveSynth-Beep");
-  sound_set_voice(2,"WaveSynth-Beep");
-  sound_set_voice(3,"WaveSynth-Beep");
-  sound_set_voice(4,"WaveSynth-Beep");
-  sound_composition_init();
-
-  sound_composition_load("music.cmpagrac");
-
-  tick = clock();
-
-  sound_composition_start(clock());
-
-  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
-  draw_sprite("kia",(DISPLAY_X/2)-300,500);
-
-  screen_flipbuffer();
-
-  while(sound_composition_incomplete())
-  {
-    sound_composition_tick(clock());
-
-    if(clock() > (tick + 100))
-    {
-      if(input_readkey(98))
-        sound_composition_stop();
-    }
-  }
-}
-
-void game2_briefing()
-{
-  screen_clear();
-
-  draw_spritetext(
-"~~~~~~~~{ chief engineers log - uss archimedes - stardate 1234567890 ==}\n\n\nyour mission is to be dead until i make mission 2. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n~~~~~~~~{======================~~~~~~~~===========================}"
-, 50, 950);
-
-  draw_sprite("spacebar",(DISPLAY_X/2)-106,50);
-
-  screen_flipbuffer();
-
-  tick = clock();
-  while(1)
-  {
-    if(clock() > (tick + 100))
-    {
-      if(input_readkey(98))
-        return;
-    }
-  }
 }
 
 void game2_fillmap(int xoffset, int yoffset)
@@ -206,6 +176,26 @@ void game2_tick_input()
       TilePlayer.mapoffset.X -= 10;
     }
   }
+
+  // Right Pointy
+  if(input_readkey(103))
+  {
+    if(tick > readmodkey)
+    {
+      fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] + 1;
+      readmodkey = tick + 10;
+    }
+  }
+
+  // Left Pointy
+  if(input_readkey(102))
+  {
+    if(tick > readmodkey)
+    {
+      fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] - 1;
+      readmodkey = tick + 10;
+    }
+  }
 }
 
 int game2_tick()
@@ -265,4 +255,69 @@ int game2_tick()
     game2_death();
     return 1;*/
   }
+}
+
+int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
+{
+    if((x1 + w1) >= x2)
+      if(x1 <= (x2 + w2))
+        if((y1 + h1) >= y2)
+          if(y1 <= (y2 + h2))
+            return 1;
+
+  return 0;
+}
+
+void exitfunc () {
+  screen_flipbuffer();
+  screen_clear();
+  screen_flipbuffer();
+  screen_clear();
+  screen_nobuffer();
+  free(buffer);
+  free(fontbuffer);
+  free(tilebuffer);
+}
+
+int main(int argc, char *argv[])
+{
+  int lastoutcome = 1;
+  int outcome = 0;
+  
+  atexit(exitfunc);
+
+  // Set initial display mode
+  display_mode(DISPLAY_MODE);
+  screen_clear();
+
+  // Load sprite library
+  load_sprites("Spr",&buffer);
+  load_sprites("Font",&fontbuffer);
+
+  // Clear both buffers or we get gibberish
+  screen_flipbuffer();
+  screen_clear();
+  screen_flipbuffer();
+  screen_clear();
+
+  lastoutcome = 1;
+
+  load_sprites("Tiles",&tilebuffer);
+
+  // Mission 2
+  while(lastoutcome == 1)
+  {
+    outcome = 0;
+    screen_clear();
+    game2_setup();
+    while(!outcome)
+    {
+      outcome = game2_tick();
+    }
+    lastoutcome = outcome;
+  }
+
+  free(buffer);
+
+  return 0;
 }

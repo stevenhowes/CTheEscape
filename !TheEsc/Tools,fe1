@@ -1,4 +1,4 @@
-# Project:   TheEsc
+# Project:   TheEscTools
 
 
 # Toolflags:
@@ -12,31 +12,22 @@ Squeezeflags = -o $@
 
 
 # Final targets:
-@.!RunImage:   @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input @.o.Intro \
-        @.o.Mission1 @.o.Mission2 C:o.stubs 
-        Link $(Linkflags) @.o.CTheEscape @.o.Graphics @.o.Sound @.o.Input \
-        @.o.Intro @.o.Mission1 @.o.Mission2 C:o.stubs 
+@.!MapEdit:   @.o.MapEdit @.o.Graphics @.o.Input \
+        C:o.stubs 
+        Link $(Linkflags) @.o.MapEdit @.o.Graphics @.o.Input \
+        C:o.stubs 
 
 
 # User-editable dependencies:
 
 # Static dependencies:
-@.o.CTheEscape:   @.c.CTheEscape
-        cc $(ccflags) -o @.o.CTheEscape @.c.CTheEscape 
 @.o.MapEdit:   @.c.MapEdit
         cc $(ccflags) -o @.o.MapEdit @.c.MapEdit 
 @.o.Graphics:   @.c.Graphics
         cc $(ccflags) -o @.o.Graphics @.c.Graphics 
-@.o.Sound:   @.c.Sound
-        cc $(ccflags) -o @.o.Sound @.c.Sound 
 @.o.Input:   @.c.Input
         cc $(ccflags) -o @.o.Input @.c.Input 
-@.o.Intro:   @.c.Intro
-        cc $(ccflags) -o @.o.Intro @.c.Intro 
-@.o.Mission1:   @.c.Mission1
-        cc $(ccflags) -o @.o.Mission1 @.c.Mission1 
-@.o.Mission2:   @.c.Mission2
-        cc $(ccflags) -o @.o.Mission2 @.c.Mission2 
+
 
 
 # Dynamic dependencies:
@@ -46,19 +37,11 @@ o.CTheEscape:	C:h.kernel
 o.CTheEscape:	C:h.kernel
 o.CTheEscape:	h.Sound
 o.CTheEscape:	h.Graphics
-o.Graphics:	c.Graphics
-o.Graphics:	C:h.swis
-o.Graphics:	C:h.kernel
-o.Graphics:	C:h.kernel
 o.Sound:	c.Sound
 o.Sound:	C:h.swis
 o.Sound:	C:h.kernel
 o.Sound:	C:h.kernel
 o.Sound:	h.Sound
-o.Input:	c.Input
-o.Input:	C:h.swis
-o.Input:	C:h.kernel
-o.Input:	C:h.kernel
 o.Intro:	c.Intro
 o.Intro:	h.Graphics
 o.Mission1:	c.Mission1
@@ -68,3 +51,17 @@ o.Mission2:	h.Graphics
 o.Mission2:	C:h.swis
 o.Mission2:	C:h.kernel
 o.Mission2:	C:h.kernel
+o.Graphics:	c.Graphics
+o.Graphics:	C:h.swis
+o.Graphics:	C:h.kernel
+o.Graphics:	C:h.kernel
+o.Input:	c.Input
+o.Input:	C:h.swis
+o.Input:	C:h.kernel
+o.Input:	C:h.kernel
+o.MapEdit:	c.MapEdit
+o.MapEdit:	C:h.swis
+o.MapEdit:	C:h.kernel
+o.MapEdit:	C:h.kernel
+o.MapEdit:	h.Sound
+o.MapEdit:	h.Graphics
