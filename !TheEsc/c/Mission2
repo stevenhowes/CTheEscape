@@ -248,11 +248,11 @@ int game2_tick()
       }
     }
 
-    draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
+/*    draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
 
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
     sprintf(textbuffer,"Tile:%i\nSprite:%i",TilePlayer.rawtile,fullmap[TilePlayer.rawtile]);
-    draw_spritetext(textbuffer, 1070, 950);
+    draw_spritetext(textbuffer, 1070, 950);*/
 
     game2_tick_input();
 

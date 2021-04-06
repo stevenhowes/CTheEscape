@@ -25,17 +25,10 @@ unsigned char *buffer;
 unsigned char *fontbuffer;
 unsigned char *tilebuffer;
 
-extern int screen;
-extern struct CompositionElement composition[128];
-extern int current_element;
-int lastprofile = 0;
-
 int tick = 0;
 int lasttick = 0;
 extern int screen;
 
-extern int game1_tick();
-extern void game1_setup();
 extern void screen_nobuffer();
 
 
