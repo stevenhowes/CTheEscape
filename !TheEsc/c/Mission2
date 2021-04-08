@@ -12,6 +12,7 @@ extern _kernel_swi_regs outreg;
 
 #define TILESX 10
 #define TILESY 10
+#define SMARTTILES 100
 
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
@@ -38,9 +39,31 @@ struct TilePlayer_s {
 
 struct TilePlayer_s TilePlayer;
 
+struct SmartTile_s {
+  int Tile;
+  int ActionTarget;
+  unsigned char Action;
+  unsigned char ActionValue;
+};
+
+struct SmartTile_s SmartTiles[SMARTTILES];
+
+void game2_savesmarttiles(char* filename)
+{
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) SmartTiles;
+  inreg.r[5] = (int) SmartTiles + (sizeof(SmartTiles));
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
 void game2_loadmap(char* filename)
 {
-  int length;
+  int length,i;
 
   // Attempt to get file info
   inreg.r[0] = 5;
@@ -64,7 +87,23 @@ void game2_loadmap(char* filename)
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
+
+  for(i = 0; i < SMARTTILES; i++)
+    SmartTiles[i].Tile = -1;
+
+  SmartTiles[0].Tile = 1206;
+  SmartTiles[0].ActionTarget = 1206;
+  SmartTiles[0].Action = 0;
+  SmartTiles[0].ActionValue = 1;
+  SmartTiles[1].Tile = 1207;
+  SmartTiles[1].ActionTarget = 1206;
+  SmartTiles[1].Action = 0;
+  SmartTiles[1].ActionValue = 16;
+  SmartTiles[2].Tile = 1205;
+  SmartTiles[2].ActionTarget = 1206;
+  SmartTiles[2].Action = 0;
+  SmartTiles[2].ActionValue = 16;
+  game2_savesmarttiles("m2_smart");
 }
 
 void game2_death()
@@ -211,6 +250,7 @@ int game2_tick()
 {
   int x;
   int y;
+  int i;
   int udt = 0;
   lasttick = tick;
   tick = clock();
@@ -219,6 +259,17 @@ int game2_tick()
 
   if(1)
   {
+    for(i = 0; i < SMARTTILES; i++)
+    {
+      if(SmartTiles[i].Tile == TilePlayer.rawtile)
+      {
+        // Change tile sprite
+        if(SmartTiles[i].Action == 0)
+          fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
+      }
+    }
+  
+  
     game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     for(x = 0; x < TILESX; x++)
     {
@@ -247,9 +298,11 @@ int game2_tick()
       }
     }
 
+    TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
+    
 /*    draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
 
-    TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
+
     sprintf(textbuffer,"Tile:%i\nSprite:%i",TilePlayer.rawtile,fullmap[TilePlayer.rawtile]);
     draw_spritetext(textbuffer, 1070, 950);*/
 
