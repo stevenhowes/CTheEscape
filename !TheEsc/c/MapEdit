@@ -129,44 +129,70 @@ void game2_tick_input()
   // Up arrow
   if(input_readkey(57))
   {
-    TilePlayer.location.Y += 6 * (tick - lasttick);
-    if(TilePlayer.location.Y > (950))
+    if(tick > readmodkey)
     {
-      TilePlayer.location.Y = 100;
-      TilePlayer.mapoffset.Y += 10;
+      TilePlayer.location.Y += 100;
+      if(TilePlayer.location.Y > (950))
+      {
+        TilePlayer.location.Y = 50;
+        TilePlayer.mapoffset.Y += 10;
+      }
+      readmodkey = tick + 10;
     }
   }
 
   // Down arrow
   if(input_readkey(41))
   {
-    TilePlayer.location.Y -= 6 * (tick - lasttick);
-    if(TilePlayer.location.Y < (10))
+    if(tick > readmodkey)
     {
-      TilePlayer.location.Y = 900;
-      TilePlayer.mapoffset.Y -= 10;
+      TilePlayer.location.Y -= 100;
+      if(TilePlayer.location.Y < (10))
+      {
+        if(TilePlayer.mapoffset.Y > 0)
+        {
+          TilePlayer.location.Y = 950;
+          TilePlayer.mapoffset.Y -= 10;
+        }else{
+          TilePlayer.location.Y += 100;
+        }
+      }
+      readmodkey = tick + 10;
     }
   }
   
   // Right arrow
   if(input_readkey(121))
   {
-    TilePlayer.location.X += 6 * (tick - lasttick);
-    if(TilePlayer.location.X > (950))
+     if(tick > readmodkey)
     {
-      TilePlayer.location.X = 100;
-      TilePlayer.mapoffset.X += 10;
+      TilePlayer.location.X += 100;
+      if(TilePlayer.location.X > (950))
+      {
+        TilePlayer.location.X = 50;
+        TilePlayer.mapoffset.X += 10;
+      }
+      readmodkey = tick + 10;
     }
   }
 
   // Left arrow
   if(input_readkey(25))
   {
-    TilePlayer.location.X -= 6 * (tick - lasttick);
-    if(TilePlayer.location.X < (10))
+    if(tick > readmodkey)
     {
-      TilePlayer.location.X = 900;
-      TilePlayer.mapoffset.X -= 10;
+      TilePlayer.location.X -= 100;
+      if(TilePlayer.location.X < (10))
+      {
+        if(TilePlayer.mapoffset.X > 0)
+        {
+        TilePlayer.location.X = 950;
+        TilePlayer.mapoffset.X -= 10;
+        }else{
+          TilePlayer.location.X += 100;
+        }
+      }
+      readmodkey = tick + 10;
     }
   }
 
