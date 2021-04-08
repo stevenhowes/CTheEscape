@@ -43,7 +43,7 @@ void game2_loadmap(char* filename)
   int length;
 
   // Attempt to get file info
-  inreg.r[0] = 13;
+  inreg.r[0] = 5;
   inreg.r[1] = (int) filename;
   _kernel_swi(OS_File,&inreg,&outreg);
 
@@ -52,10 +52,9 @@ void game2_loadmap(char* filename)
 
   if(length > sizeof(fullmap))
   {
-    // TODO: Work out why real machine doesn't appear to read size and gives object type 19
-    /*screen_nobuffer();
-    printf("Map exceeds %d bytes (%d bytes) Object Type %d",sizeof(fullmap),length,outreg.r[0]);
-    exit(0);*/
+    screen_nobuffer();
+    printf("Map exceeds %d bytes (%d bytes) object type is %d\n",sizeof(fullmap),length,outreg.r[0]);
+    exit(0);
   }
   
   // Attempt to get file info

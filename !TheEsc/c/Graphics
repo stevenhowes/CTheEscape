@@ -19,7 +19,7 @@ void load_sprites(char* filename, unsigned char **buffername)
   int length;
 
   // Attempt to get file info
-  inreg.r[0] = 13;
+  inreg.r[0] = 5;
   inreg.r[1] = (int) filename;
   _kernel_swi(OS_File,&inreg,&outreg);
 
@@ -29,7 +29,7 @@ void load_sprites(char* filename, unsigned char **buffername)
   // If it's <1 it's fil not found
   if(outreg.r[0] < 1)
   {         
-    printf("Sprite file %s not found",filename);
+    printf("Sprite file %s not found, object type is %i and size is %i\n",filename,outreg.r[0],outreg.r[4]);
     exit(0);
   }
 
@@ -37,7 +37,7 @@ void load_sprites(char* filename, unsigned char **buffername)
   if(length > 200000)
   {
     screen_nobuffer();
-    printf("Sprite file %s seems unreasonably large at %i bytes",filename, length);
+    printf("Sprite file %s seems unreasonably large at %i bytes, object type is %i\n",filename, length, outreg.r[0]);
     exit(0);
   }
 
@@ -47,7 +47,7 @@ void load_sprites(char* filename, unsigned char **buffername)
   if(buffername==NULL)
   {
     screen_nobuffer();
-    printf("Couldn't malloc %i bytes for sprite buffer",length);
+    printf("Couldn't malloc %i bytes for sprite buffer\n",length);
     exit(0);
   }
 
@@ -89,7 +89,8 @@ void display_mode(int mode)
   if (_kernel_swi(OS_ChangeDynamicArea, &inreg, &outreg) != NULL)
   {
     screen_nobuffer();
-    printf("Couldn't OS_ChangeDynamicArea");
+    while(1)
+    printf("Couldn't OS_ChangeDynamicArea\n");
     exit(0);
   }
 }
