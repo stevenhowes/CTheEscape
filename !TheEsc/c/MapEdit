@@ -89,6 +89,19 @@ void game2_loadmap(char* filename)
  
 }
 
+void game2_savemap(char* filename)
+{
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) fullmap;
+  inreg.r[5] = (int) fullmap + sizeof(fullmap);
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
 void game2_fillmap(int xoffset, int yoffset)
 {
   memcpy(map[0][0],fullmap+yoffset+(xoffset*100),10);
@@ -234,6 +247,11 @@ void game2_tick_input()
       fullmap[TilePlayer.rawtile] = clipboard;
       readmodkey = tick + 10;
     }
+  }
+  // C
+  if(input_readkey(81))
+  {
+    game2_savemap("mission2");
   }
 }
 
