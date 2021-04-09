@@ -247,10 +247,22 @@ void game2_tick_input()
       readmodkey = tick + 10;
     }
   }
-  // C
+
+  // S
   if(input_readkey(81))
   {
     game2_savemap("mission2");
+  }
+
+  // H
+  if(input_readkey(84))
+  {
+    if(tick > readmodkey)
+    {
+      fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] ^ 128;
+      readmodkey = tick + 10;
+
+    }
   }
 }
 
@@ -276,8 +288,12 @@ int game2_tick()
         if(1/*map[0][x][y] ^ map[screen+1][x][y]*/)
         {
           map[screen+1][x][y] = map[0][x][y];
-          sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+          sprintf(tilenamebuffer,"%i",map[screen+1][x][y] & 127);
           draw_tile(tilenamebuffer,x*100,y*100);
+          if(((map[screen+1][x][y] >> 7)  & 0x01))
+          {
+          draw_sprite("solid",x*100,y*100);
+          }
           udt++;
         }
         
@@ -294,7 +310,6 @@ int game2_tick()
           TilePlayer.localtile.Y = y;
           if(screen)
            draw_sprite("select1",x*100,y*100);
-
             else
           draw_sprite("select2",x*100,y*100);
         }
@@ -306,7 +321,12 @@ int game2_tick()
     draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
 
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
-    sprintf(textbuffer,"Tile:%i\nSprite:%i",TilePlayer.rawtile,fullmap[TilePlayer.rawtile]);
+
+    sprintf(textbuffer,"Tile:%i\nSprite:%i\nSolid: %i",
+        TilePlayer.rawtile,
+        fullmap[TilePlayer.rawtile],
+        ((fullmap[TilePlayer.rawtile] >> 7)  & 0x01)
+    );
     draw_spritetext(textbuffer, 1070, 950);
 
     game2_tick_input();
@@ -315,18 +335,19 @@ int game2_tick()
 
     x = 1100;
     y = 600;
+
     for(i = (fullmap[TilePlayer.rawtile] - 3); i <= (fullmap[TilePlayer.rawtile] + 3); i++)
     {
       if((i >=0) && (i <= 255))
       {
-      sprintf(tilenamebuffer,"%i",i);
-      draw_tile(tilenamebuffer,x,y);
+        sprintf(tilenamebuffer,"%i",i);
+        draw_tile(tilenamebuffer,x,y);
       
-      sprintf(textbuffer,"%d",i);
-      draw_spritetext(textbuffer, x-60, y+30);
+        sprintf(textbuffer,"%d",i);
+        draw_spritetext(textbuffer, x-60, y+30);
     
-      if(i == fullmap[TilePlayer.rawtile])
-        draw_sprite("select1",x,y);
+        if(i == fullmap[TilePlayer.rawtile])
+          draw_sprite("select1",x,y);
       }
       y = y - 100;
     }
@@ -334,11 +355,11 @@ int game2_tick()
     x = 1180;
     y = 750;
   
-      sprintf(tilenamebuffer,"%i",clipboard);
-      draw_tile(tilenamebuffer,x,y);
-        draw_sprite("select1",x,y);
+    sprintf(tilenamebuffer,"%i",clipboard);
+    draw_tile(tilenamebuffer,x,y);
+    draw_sprite("select1",x,y);
 
-      draw_spritetext("Clipboard", x-174, y+30);
+    draw_spritetext("Clipboard", x-174, y+30);
     
     
     return 0;

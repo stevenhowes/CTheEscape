@@ -94,15 +94,33 @@ void game2_loadmap(char* filename)
   SmartTiles[0].Tile = 1206;
   SmartTiles[0].ActionTarget = 1206;
   SmartTiles[0].Action = 0;
-  SmartTiles[0].ActionValue = 1;
+  SmartTiles[0].ActionValue = 16;
+  
   SmartTiles[1].Tile = 1207;
   SmartTiles[1].ActionTarget = 1206;
   SmartTiles[1].Action = 0;
   SmartTiles[1].ActionValue = 16;
-  SmartTiles[2].Tile = 1205;
+  
+  SmartTiles[2].Tile = 1107;
   SmartTiles[2].ActionTarget = 1206;
   SmartTiles[2].Action = 0;
-  SmartTiles[2].ActionValue = 16;
+  SmartTiles[2].ActionValue = 17;
+
+  SmartTiles[3].Tile = 1208;
+  SmartTiles[3].ActionTarget = 1206;
+  SmartTiles[3].Action = 0;
+  SmartTiles[3].ActionValue = 17;
+
+  SmartTiles[4].Tile = 1307;
+  SmartTiles[4].ActionTarget = 1206;
+  SmartTiles[4].Action = 0;
+  SmartTiles[4].ActionValue = 17;
+
+
+  SmartTiles[5].Tile = 1205;
+  SmartTiles[5].ActionTarget = 1206;
+  SmartTiles[5].Action = 0;
+  SmartTiles[5].ActionValue = 17;
   game2_savesmarttiles("m2_smart");
 }
 
@@ -251,7 +269,7 @@ int game2_tick()
   int x;
   int y;
   int i;
-  int udt = 0;
+
   lasttick = tick;
   tick = clock();
 
@@ -259,22 +277,14 @@ int game2_tick()
 
   if(1)
   {
-    for(i = 0; i < SMARTTILES; i++)
-    {
-      if(SmartTiles[i].Tile == TilePlayer.rawtile)
-      {
-        // Change tile sprite
-        if(SmartTiles[i].Action == 0)
-          fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
-      }
-    }
-  
-  
+    // Fill the map0 with our chunk of the full map
     game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
+
     for(x = 0; x < TILESX; x++)
     {
       for(y = 0; y < TILESY; y++)
       {
+        // Finds any tile we collide with
         if(game_hitbox_collide(
         (TilePlayer.location.X + TilePlayer.hitbox_bl.X),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
         (TilePlayer.hitbox_tr.X - TilePlayer.hitbox_bl.X),(TilePlayer.hitbox_tr.Y - TilePlayer.hitbox_bl.Y),
@@ -284,27 +294,46 @@ int game2_tick()
         {
           map[1][x][y] = 255;
           map[2][x][y] = 255;
+        }
+
+        // Find the tile under our centre of mass
+        if(game_hitbox_collide(
+        (TilePlayer.location.X +  TilePlayer.hitbox_bl.X + (TilePlayer.hitbox_tr.X/2)),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y + (TilePlayer.hitbox_tr.Y/2)),
+        (1),(1),
+        x*100,y*100,
+        100,100
+        ))
+        {
           TilePlayer.localtile.X = x;
           TilePlayer.localtile.Y = y;
         }
 
+        // Redraw any tiles we're overlapping
         if(map[0][x][y] ^ map[screen+1][x][y])
         {
           map[screen+1][x][y] = map[0][x][y];
-          sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+          if(map[screen+1][x][y] < 128)
+            sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+          else
+            sprintf(tilenamebuffer,"%i",(map[screen+1][x][y]-128));
+
           draw_tile(tilenamebuffer,x*100,y*100);
-          udt++;
         }
       }
     }
 
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
-    
-/*    draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
 
-
-    sprintf(textbuffer,"Tile:%i\nSprite:%i",TilePlayer.rawtile,fullmap[TilePlayer.rawtile]);
-    draw_spritetext(textbuffer, 1070, 950);*/
+    // Trigger any smart tiles for our centre of mass
+    for(i = 0; i < SMARTTILES; i++)
+    {
+      if(SmartTiles[i].Tile == TilePlayer.rawtile)
+      {
+        // Change tile sprite
+        if(SmartTiles[i].Action == 0)
+          fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
+      }
+    }
 
     game2_tick_input();
 
