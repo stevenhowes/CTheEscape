@@ -30,6 +30,7 @@ struct EntityLocation_s {
 
 struct TilePlayer_s {
   struct EntityLocation_s location;
+  struct EntityLocation_s lastlocation;
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
   struct EntityLocation_s mapoffset;
@@ -216,9 +217,41 @@ void game2_setup()
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
+int game2_check_collide()
+{
+  int x,y,hit;
+
+  hit = 0;
+
+  for(x = 0; x < TILESX; x++)
+  {
+    for(y = 0; y < TILESY; y++)
+    {
+      // Finds any tile we collide with
+      if(game_hitbox_collide(
+      (TilePlayer.location.X + TilePlayer.hitbox_bl.X),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
+      (TilePlayer.hitbox_tr.X - TilePlayer.hitbox_bl.X),(TilePlayer.hitbox_tr.Y - TilePlayer.hitbox_bl.Y),
+      x*100,y*100,
+      100,100
+      ))
+      {
+        if(((map[screen+1][x][y] >> 7)  & 0x01))
+        {
+          hit = 1;
+        }
+      }
+    }
+  }
+
+  return hit;
+}
+
 void game2_tick_input()
 {
-  int x,y;
+  // Store in case we have a vertical collide
+  TilePlayer.lastlocation.X = TilePlayer.location.X;
+  TilePlayer.lastlocation.Y = TilePlayer.location.Y;
+
   // Up arrow
   if(input_readkey(57))
   {
@@ -240,7 +273,17 @@ void game2_tick_input()
       TilePlayer.mapoffset.Y -= 10;
     }
   }
-  
+
+  if(game2_check_collide())
+  {
+    TilePlayer.location.X = TilePlayer.lastlocation.X;
+    TilePlayer.location.Y = TilePlayer.lastlocation.Y;
+  }
+
+  // Store in case we have a horizontal collide
+  TilePlayer.lastlocation.X = TilePlayer.location.X;
+  TilePlayer.lastlocation.Y = TilePlayer.location.Y;
+
   // Right arrow
   if(input_readkey(121))
   {
@@ -261,6 +304,12 @@ void game2_tick_input()
       TilePlayer.location.X = 900;
       TilePlayer.mapoffset.X -= 10;
     }
+  }
+
+  if(game2_check_collide())
+  {
+    TilePlayer.location.X = TilePlayer.lastlocation.X;
+    TilePlayer.location.Y = TilePlayer.lastlocation.Y;
   }
 }
 
