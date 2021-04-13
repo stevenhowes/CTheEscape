@@ -34,6 +34,7 @@ struct TilePlayer_s {
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
   struct EntityLocation_s mapoffset;
+  struct EntityLocation_s lastmapoffset;
   struct EntityLocation_s localtile;
   int rawtile;
 };
@@ -235,7 +236,7 @@ int game2_check_collide()
       100,100
       ))
       {
-        if(((map[screen+1][x][y] >> 7)  & 0x01))
+        if(((map[0][x][y] >> 7)  & 0x01))
         {
           hit = 1;
         }
@@ -251,7 +252,9 @@ void game2_tick_input()
   // Store in case we have a vertical collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
   TilePlayer.lastlocation.Y = TilePlayer.location.Y;
-
+  TilePlayer.lastmapoffset.X = TilePlayer.mapoffset.X;
+  TilePlayer.lastmapoffset.Y = TilePlayer.mapoffset.Y;
+  
   // Up arrow
   if(input_readkey(57))
   {
@@ -260,6 +263,7 @@ void game2_tick_input()
     {
       TilePlayer.location.Y = 100;
       TilePlayer.mapoffset.Y += 10;
+      game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
   }
 
@@ -269,15 +273,24 @@ void game2_tick_input()
     TilePlayer.location.Y -= 3 * (tick - lasttick);
     if(TilePlayer.location.Y < (10))
     {
-      TilePlayer.location.Y = 900;
-      TilePlayer.mapoffset.Y -= 10;
+      if(TilePlayer.mapoffset.Y > 0)
+      {
+        TilePlayer.location.Y = 900;
+        TilePlayer.mapoffset.Y -= 10;
+        game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
+      }else{
+        TilePlayer.location.Y = TilePlayer.lastlocation.Y;
+      }
     }
   }
+
 
   if(game2_check_collide())
   {
     TilePlayer.location.X = TilePlayer.lastlocation.X;
     TilePlayer.location.Y = TilePlayer.lastlocation.Y;
+    TilePlayer.mapoffset.X = TilePlayer.lastmapoffset.X;
+    TilePlayer.mapoffset.Y = TilePlayer.lastmapoffset.Y;
   }
 
   // Store in case we have a horizontal collide
@@ -292,6 +305,7 @@ void game2_tick_input()
     {
       TilePlayer.location.X = 100;
       TilePlayer.mapoffset.X += 10;
+      game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
   }
 
@@ -301,8 +315,14 @@ void game2_tick_input()
     TilePlayer.location.X -= 3 * (tick - lasttick);
     if(TilePlayer.location.X < (10))
     {
-      TilePlayer.location.X = 900;
-      TilePlayer.mapoffset.X -= 10;
+      if(TilePlayer.mapoffset.X > 0)
+      {
+        TilePlayer.location.X = 900;
+        TilePlayer.mapoffset.X -= 10;
+        game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
+      }else{
+        TilePlayer.location.X = TilePlayer.lastlocation.X;
+      }
     }
   }
 
