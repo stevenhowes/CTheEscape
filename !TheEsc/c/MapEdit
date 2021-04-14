@@ -306,6 +306,7 @@ void game2_tick_input()
   if(input_readkey(81))
   {
     game2_savemap("mission2");
+    game2_savesmarttiles("m2_smart");
   }
 
   // H
