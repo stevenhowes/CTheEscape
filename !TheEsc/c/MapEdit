@@ -184,7 +184,7 @@ void game2_setup()
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
 
-  game2_loadmap("mission2");
+  game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
@@ -305,7 +305,7 @@ void game2_tick_input()
   // S
   if(input_readkey(81))
   {
-    game2_savemap("mission2");
+    game2_savemap("m2_map");
     game2_savesmarttiles("m2_smart");
   }
 

@@ -63,6 +63,36 @@ void game2_savesmarttiles(char* filename)
  
 }
 
+void game2_loadsmarttiles(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(SmartTiles))
+  {
+    screen_nobuffer();
+    while (1)
+    printf("Smarttiles exceeds %d bytes (%d bytes) object type is %d\n",sizeof(SmartTiles),length,outreg.r[0]);
+    //exit(0);
+  }
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) SmartTiles;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
 void game2_loadmap(char* filename)
 {
   int length,i;
@@ -92,38 +122,6 @@ void game2_loadmap(char* filename)
 
   for(i = 0; i < SMARTTILES; i++)
     SmartTiles[i].Tile = -1;
-
-  SmartTiles[0].Tile = 1206;
-  SmartTiles[0].ActionTarget = 1206;
-  SmartTiles[0].Action = 0;
-  SmartTiles[0].ActionValue = 16;
-  
-  SmartTiles[1].Tile = 1207;
-  SmartTiles[1].ActionTarget = 1206;
-  SmartTiles[1].Action = 0;
-  SmartTiles[1].ActionValue = 16;
-  
-  SmartTiles[2].Tile = 1107;
-  SmartTiles[2].ActionTarget = 1206;
-  SmartTiles[2].Action = 0;
-  SmartTiles[2].ActionValue = 17;
-
-  SmartTiles[3].Tile = 1208;
-  SmartTiles[3].ActionTarget = 1206;
-  SmartTiles[3].Action = 0;
-  SmartTiles[3].ActionValue = 17;
-
-  SmartTiles[4].Tile = 1307;
-  SmartTiles[4].ActionTarget = 1206;
-  SmartTiles[4].Action = 0;
-  SmartTiles[4].ActionValue = 17;
-
-
-  SmartTiles[5].Tile = 1205;
-  SmartTiles[5].ActionTarget = 1206;
-  SmartTiles[5].Action = 0;
-  SmartTiles[5].ActionValue = 17;
-  game2_savesmarttiles("m2_smart");
 }
 
 void game2_death()
@@ -214,7 +212,8 @@ void game2_setup()
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
 
-  game2_loadmap("mission2");
+  game2_loadmap("m2_map");
+  game2_loadsmarttiles("m2_smart");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
