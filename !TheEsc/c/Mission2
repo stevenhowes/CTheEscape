@@ -202,8 +202,8 @@ void game2_setup()
   screen_clear();
   screen_flipbuffer();
   screen_clear();
-  TilePlayer.location.X = 100;
-  TilePlayer.location.Y = 100;
+  TilePlayer.location.X = 125;
+  TilePlayer.location.Y = 125;
   TilePlayer.hitbox_bl.X = 0;
   TilePlayer.hitbox_bl.Y = 0;
   TilePlayer.hitbox_tr.X = 60;
