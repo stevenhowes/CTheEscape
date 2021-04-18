@@ -1,6 +1,23 @@
-corner 90
-horiz 247
-vert 91
-carpet 11
+WALL
+corner    90
+horiz     247
+vert      91
 wall top 2
-door 89 with 45 split
+
+CORRIDOR
+carpet    11
+
+DOORS
+std door  89 with 45 split line
+
+SHUTTLE BAY
+floor 210 specked with 208/211/245
+forcefield 171 on 2 background 248 alternating
+
+SHUTTLE
+Roof     253
+Side     211
+Nose     254
+Aft      208
+Nac Str  53/55
+Red Str  16
