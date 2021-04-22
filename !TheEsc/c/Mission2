@@ -310,7 +310,7 @@ void game2_tick_input()
   if(input_readkey(121))
   {
     TilePlayer.location.X += 3 * (tick - lasttick);
-    if(TilePlayer.location.X > (950))
+    if(TilePlayer.location.X > (930))
     {
       TilePlayer.location.X = 100;
       TilePlayer.mapoffset.X += 10;
@@ -416,6 +416,8 @@ int game2_tick()
     game2_tick_input();
 
     draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
+
+#ifdef M2_DEBUG_HITBOXES
     draw_rectangle(
     (TilePlayer.location.X + TilePlayer.hitbox_bl.X),
     (TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
@@ -428,6 +430,7 @@ int game2_tick()
     (TilePlayer.location.X + TilePlayer.drawbox_tr.X),
     (TilePlayer.location.Y + TilePlayer.drawbox_tr.Y)
     );
+#endif
     return 0;
   }else{
 /*    screen_flipbuffer();
