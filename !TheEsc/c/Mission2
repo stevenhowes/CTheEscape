@@ -33,6 +33,8 @@ struct TilePlayer_s {
   struct EntityLocation_s lastlocation;
   struct EntityLocation_s hitbox_bl;
   struct EntityLocation_s hitbox_tr;
+  struct EntityLocation_s drawbox_bl;
+  struct EntityLocation_s drawbox_tr;
   struct EntityLocation_s mapoffset;
   struct EntityLocation_s lastmapoffset;
   struct EntityLocation_s localtile;
@@ -202,12 +204,20 @@ void game2_setup()
   screen_clear();
   screen_flipbuffer();
   screen_clear();
+  
   TilePlayer.location.X = 125;
   TilePlayer.location.Y = 125;
-  TilePlayer.hitbox_bl.X = 0;
+  
+  TilePlayer.hitbox_bl.X = 30;
   TilePlayer.hitbox_bl.Y = 0;
   TilePlayer.hitbox_tr.X = 60;
-  TilePlayer.hitbox_tr.Y = 50;
+  TilePlayer.hitbox_tr.Y = 30;
+  
+  TilePlayer.drawbox_bl.X = 5;
+  TilePlayer.drawbox_bl.Y = 0;
+  TilePlayer.drawbox_tr.X = 60;
+  TilePlayer.drawbox_tr.Y = 75;
+  
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
@@ -354,8 +364,8 @@ int game2_tick()
       {
         // Finds any tile we collide with
         if(game_hitbox_collide(
-        (TilePlayer.location.X + TilePlayer.hitbox_bl.X),(TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
-        (TilePlayer.hitbox_tr.X - TilePlayer.hitbox_bl.X),(TilePlayer.hitbox_tr.Y - TilePlayer.hitbox_bl.Y),
+        (TilePlayer.location.X + TilePlayer.drawbox_bl.X),(TilePlayer.location.Y + TilePlayer.drawbox_bl.Y),
+        (TilePlayer.hitbox_tr.X - TilePlayer.drawbox_bl.X),(TilePlayer.drawbox_tr.Y - TilePlayer.drawbox_bl.Y),
         x*100,y*100,
         100,100
         ))
@@ -406,7 +416,18 @@ int game2_tick()
     game2_tick_input();
 
     draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
-
+    draw_rectangle(
+    (TilePlayer.location.X + TilePlayer.hitbox_bl.X),
+    (TilePlayer.location.Y + TilePlayer.hitbox_bl.Y),
+    (TilePlayer.location.X + TilePlayer.hitbox_tr.X),
+    (TilePlayer.location.Y + TilePlayer.hitbox_tr.Y)
+    );
+    draw_rectangle(
+    (TilePlayer.location.X + TilePlayer.drawbox_bl.X),
+    (TilePlayer.location.Y + TilePlayer.drawbox_bl.Y),
+    (TilePlayer.location.X + TilePlayer.drawbox_tr.X),
+    (TilePlayer.location.Y + TilePlayer.drawbox_tr.Y)
+    );
     return 0;
   }else{
 /*    screen_flipbuffer();
