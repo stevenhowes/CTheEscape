@@ -8,7 +8,6 @@
 //#define SKIP_INTRO
 //#define SKIP_MISSION1
 //#define SKIP_MISSION2
-//#define M2_DEBUG_HITBOXES
 
 // SWI Registers
 _kernel_swi_regs inreg;

@@ -13,6 +13,7 @@ extern _kernel_swi_regs outreg;
 #define TILESX 10
 #define TILESY 10
 #define SMARTTILES 100
+#define AREAS 20
 
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
@@ -21,12 +22,20 @@ extern _kernel_swi_regs outreg;
 unsigned char map[3][TILESX][TILESY];
 unsigned char fullmap[10000];
 
+unsigned char areaname[13];
+
 char tilenamebuffer[4];
 char textbuffer[63];
 
 struct EntityLocation_s {
   short signed int X,Y;
 };
+
+struct Area_s {
+  unsigned char name[16];
+};
+
+struct Area_s Areas[AREAS];
 
 struct TilePlayer_s {
   struct EntityLocation_s location;
@@ -52,6 +61,7 @@ struct SmartTile_s {
 
 struct SmartTile_s SmartTiles[SMARTTILES];
 
+/************VVV TO BE REMOVED/MOVED TO MAPEDIT VVV***********/
 void game2_savesmarttiles(char* filename)
 {
   // Attempt to get file info
@@ -64,7 +74,19 @@ void game2_savesmarttiles(char* filename)
   _kernel_swi(OS_File,&inreg,&outreg);
  
 }
+void game2_saveareanames(char* filename)
+{
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) Areas;
+  inreg.r[5] = (int) Areas + (sizeof(Areas));
 
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+/************^^^ TO BE REMOVED/MOVED TO MAPEDIT ^^^***********/
 void game2_loadsmarttiles(char* filename)
 {
   int length;
@@ -224,6 +246,16 @@ void game2_setup()
 
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
+  sprintf(areaname,"null");
+  sprintf(Areas[0].name,"corridor");
+  sprintf(Areas[1].name,"shuttle bay");
+  sprintf(Areas[2].name,"briefing room");
+  sprintf(Areas[3].name,"cargo bay");
+  sprintf(Areas[4].name,"arboretum");
+  sprintf(Areas[5].name,"torpedo room 1");
+  sprintf(Areas[6].name,"torpedo room 2");
+  sprintf(Areas[7].name,"sensor control");
+  game2_saveareanames("m2_areas");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
@@ -357,6 +389,9 @@ int game2_tick()
   {
     // Fill the map0 with our chunk of the full map
     game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
+    
+    draw_spritetext("#############", 1020, 950);
+    draw_spritetext(areaname, 1020, 950);
 
     for(x = 0; x < TILESX; x++)
     {
@@ -410,6 +445,8 @@ int game2_tick()
         // Change tile sprite
         if(SmartTiles[i].Action == 0)
           fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
+        else if(SmartTiles[i].Action == 1)
+          sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
       }
     }
 
