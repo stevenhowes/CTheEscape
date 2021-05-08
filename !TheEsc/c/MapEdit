@@ -15,7 +15,8 @@ extern int screen;
 
 #define TILESX 10
 #define TILESY 10
-#define SMARTTILES 100
+#define SMARTTILES 200
+#define AREAS 20
 
 // SWI Registers
 _kernel_swi_regs inreg;
@@ -30,9 +31,10 @@ int tick = 0;
 int lasttick = 0;
 extern int screen;
 int clipboard = 0;
+int clipboard_tileid = 0;
 extern void screen_nobuffer();
-
-
+unsigned int editsmart = 0;
+int selectedsmart = -1;
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
 // and we run a compare to see if re-drawing is needed. 0xFF is used
@@ -69,6 +71,19 @@ struct SmartTile_s {
 
 struct SmartTile_s SmartTiles[SMARTTILES];
 
+struct Area_s {
+  unsigned char name[16];
+};
+
+struct Area_s Areas[AREAS];
+
+#define ACTION_SIZE 16
+
+char actionnames[][ACTION_SIZE] =
+{ "TileSet",
+  "AreaChange"
+};
+
 void game2_loadsmarttiles(char* filename)
 {
   int length;
@@ -99,6 +114,36 @@ void game2_loadsmarttiles(char* filename)
  
 }
 
+void game2_loadareanames(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(Areas))
+  {
+    screen_nobuffer();
+    while (1)
+    printf("Areas exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Areas),length,outreg.r[0]);
+    //exit(0);
+  }
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) Areas;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
 void game2_savesmarttiles(char* filename)
 {
   // Attempt to get file info
@@ -109,7 +154,22 @@ void game2_savesmarttiles(char* filename)
   inreg.r[5] = (int) SmartTiles + (sizeof(SmartTiles));
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
+}
+
+
+void game2_getnewsmarttile()
+{
+  int i;
+  for(i = 0; i < SMARTTILES; i++)
+  {
+    if(SmartTiles[i].Tile == -1)
+    {
+      SmartTiles[i].Tile = TilePlayer.rawtile;
+      SmartTiles[i].Action = 0;
+      SmartTiles[i].ActionValue = 0;
+      return;
+    }
+  }
 }
 
 void game2_loadmap(char* filename)
@@ -138,7 +198,6 @@ void game2_loadmap(char* filename)
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
 }
 
 void game2_savemap(char* filename)
@@ -151,7 +210,6 @@ void game2_savemap(char* filename)
   inreg.r[5] = (int) fullmap + sizeof(fullmap);
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
 }
 
 void game2_fillmap(int xoffset, int yoffset)
@@ -186,137 +244,255 @@ void game2_setup()
 
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
+  game2_loadareanames("m2_areas");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
 void game2_tick_input()
 {
   int x,y;
-  // Up arrow
-  if(input_readkey(57))
+  int oldselectedsmart;
+  oldselectedsmart = selectedsmart;
+  if(editsmart == 1)
   {
-    if(tick > readmodkey)
+    // Right arrow
+    if(input_readkey(121))
     {
-      TilePlayer.location.Y += 100;
-      if(TilePlayer.location.Y > (950))
+       if(tick > readmodkey)
       {
-        TilePlayer.location.Y = 50;
-        TilePlayer.mapoffset.Y += 10;
+        SmartTiles[selectedsmart].Action++;
+        if(SmartTiles[selectedsmart].Action > 1)
+          SmartTiles[selectedsmart].Action = 1;
+        readmodkey = tick + 20;
       }
-      readmodkey = tick + 10;
     }
-  }
 
-  // Down arrow
-  if(input_readkey(41))
-  {
-    if(tick > readmodkey)
+    // Left arrow
+    if(input_readkey(25))
     {
-      TilePlayer.location.Y -= 100;
-      if(TilePlayer.location.Y < (10))
+      if(tick > readmodkey)
       {
-        if(TilePlayer.mapoffset.Y > 0)
+        SmartTiles[selectedsmart].Action--;
+        // Looks weird, but unsigned so -1 is 255
+        if(SmartTiles[selectedsmart].Action > 1)
+          SmartTiles[selectedsmart].Action = 0;
+        readmodkey = tick + 20;
+      }
+    }
+
+    // Up arrow
+    if(input_readkey(57))
+    {
+      if(tick > readmodkey)
+      {
+        selectedsmart--;
+        while(SmartTiles[selectedsmart].Tile != SmartTiles[oldselectedsmart].Tile)
         {
-          TilePlayer.location.Y = 950;
-          TilePlayer.mapoffset.Y -= 10;
-        }else{
-          TilePlayer.location.Y += 100;
+          if(selectedsmart > 0)
+            selectedsmart--;
+          else
+            selectedsmart = oldselectedsmart;
         }
+        readmodkey = tick + 20;
       }
-      readmodkey = tick + 10;
     }
-  }
-  
-  // Right arrow
-  if(input_readkey(121))
-  {
-     if(tick > readmodkey)
-    {
-      TilePlayer.location.X += 100;
-      if(TilePlayer.location.X > (950))
-      {
-        TilePlayer.location.X = 50;
-        TilePlayer.mapoffset.X += 10;
-      }
-      readmodkey = tick + 10;
-    }
-  }
 
-  // Left arrow
-  if(input_readkey(25))
-  {
-    if(tick > readmodkey)
+    // Down arrow
+    if(input_readkey(41))
     {
-      TilePlayer.location.X -= 100;
-      if(TilePlayer.location.X < (10))
+      if(tick > readmodkey)
       {
-        if(TilePlayer.mapoffset.X > 0)
+        selectedsmart++;
+        while(SmartTiles[selectedsmart].Tile != SmartTiles[oldselectedsmart].Tile)
         {
-        TilePlayer.location.X = 950;
-        TilePlayer.mapoffset.X -= 10;
-        }else{
-          TilePlayer.location.X += 100;
+          if(selectedsmart < SMARTTILES)
+            selectedsmart++;
+          else
+            selectedsmart = oldselectedsmart;
         }
+        readmodkey = tick + 20;
       }
-      readmodkey = tick + 10;
     }
-  }
 
-  // Right Pointy
-  if(input_readkey(103))
-  {
-    if(tick > readmodkey)
+    // > - next tile
+    if(input_readkey(103))
     {
-      fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] + 1;
-      readmodkey = tick + 10;
+      if(tick > readmodkey)
+      {
+        if(SmartTiles[selectedsmart].Action == 0)
+          SmartTiles[selectedsmart].ActionValue++;
+        readmodkey = tick + 10;
+      }
     }
-  }
 
-  // Left Pointy
-  if(input_readkey(102))
-  {
-    if(tick > readmodkey)
+    // < - previous tile
+    if(input_readkey(102))
     {
-      fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] - 1;
-      readmodkey = tick + 10;
+      if(tick > readmodkey)
+      {
+        if(SmartTiles[selectedsmart].Action == 0)
+          SmartTiles[selectedsmart].ActionValue--;
+        readmodkey = tick + 10;
+      }
     }
-  }
 
-  // C
-  if(input_readkey(82))
-  {
-    if(tick > readmodkey)
+    // C - Create smart tile
+    if(input_readkey(82))
     {
-      clipboard = fullmap[TilePlayer.rawtile];
-      readmodkey = tick + 10;
+      if(tick > readmodkey)
+      {
+        game2_getnewsmarttile();
+        readmodkey = tick + 10;
+      }
     }
-  }
 
-  // p
-  if(input_readkey(55))
-  {
-    if(tick > readmodkey)
+    // P - Set Target
+    if(input_readkey(55))
     {
-      fullmap[TilePlayer.rawtile] = clipboard;
-      readmodkey = tick + 10;
+      if(tick > readmodkey)
+      {
+         if(SmartTiles[selectedsmart].Action == 0)
+           SmartTiles[selectedsmart].ActionTarget = clipboard_tileid;
+        readmodkey = tick + 10;
+      }
+    }
+  }else{
+    // Right arrow
+    if(input_readkey(121))
+    {
+       if(tick > readmodkey)
+      {
+        TilePlayer.location.X += 100;
+        if(TilePlayer.location.X > (950))
+        {
+          TilePlayer.location.X = 50;
+          TilePlayer.mapoffset.X += 10;
+        }
+        readmodkey = tick + 10;
+      }
+    }
+
+    // Left arrow
+    if(input_readkey(25))
+    {
+      if(tick > readmodkey)
+      {
+        TilePlayer.location.X -= 100;
+        if(TilePlayer.location.X < (10))
+        {
+          if(TilePlayer.mapoffset.X > 0)
+          {
+            TilePlayer.location.X = 950;
+            TilePlayer.mapoffset.X -= 10;
+          }else{
+            TilePlayer.location.X += 100;
+          }
+        }
+        readmodkey = tick + 10;
+      }
+    }
+
+    // Up arrow
+    if(input_readkey(57))
+    {
+      if(tick > readmodkey)
+      {
+        TilePlayer.location.Y += 100;
+        if(TilePlayer.location.Y > (950))
+        {
+          TilePlayer.location.Y = 50;
+          TilePlayer.mapoffset.Y += 10;
+        }
+        readmodkey = tick + 10;
+      }
+    }
+
+    // Down arrow
+    if(input_readkey(41))
+    {
+      if(tick > readmodkey)
+      {
+        TilePlayer.location.Y -= 100;
+        if(TilePlayer.location.Y < (10))
+        {
+          if(TilePlayer.mapoffset.Y > 0)
+          {
+            TilePlayer.location.Y = 950;
+            TilePlayer.mapoffset.Y -= 10;
+          }else{
+            TilePlayer.location.Y += 100;
+          }
+        }
+        readmodkey = tick + 10;
+      }
+    }
+
+    // > - next tile
+    if(input_readkey(103))
+    {
+      if(tick > readmodkey)
+      {
+        fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] + 1;
+        readmodkey = tick + 10;
+      }
+    }
+
+    // < - previous tile
+    if(input_readkey(102))
+    {
+      if(tick > readmodkey)
+      {
+        fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] - 1;
+        readmodkey = tick + 10;
+      }
+    }
+
+    // C - Copy tile
+    if(input_readkey(82))
+    {
+      if(tick > readmodkey)
+      {
+        clipboard = fullmap[TilePlayer.rawtile];
+        clipboard_tileid = TilePlayer.rawtile;
+        readmodkey = tick + 10;
+      }
+    }
+
+    // P - Paste tile
+    if(input_readkey(55))
+    {
+      if(tick > readmodkey)
+      {
+        fullmap[TilePlayer.rawtile] = clipboard;
+        readmodkey = tick + 10;
+      }
     }
   }
 
-  // S
+  // S - Save
   if(input_readkey(81))
   {
     game2_savemap("m2_map");
     game2_savesmarttiles("m2_smart");
   }
 
-  // H
+  // H - Toggle 'hard' on a tile
   if(input_readkey(84))
   {
     if(tick > readmodkey)
     {
       fullmap[TilePlayer.rawtile] = fullmap[TilePlayer.rawtile] ^ 128;
       readmodkey = tick + 10;
+    }
+  }
 
+  // T - Toggle Smart Tile (trigger) editor
+  if(input_readkey(35))
+  {
+    if(tick > readmodkey)
+    {
+      editsmart = !editsmart;
+      readmodkey = tick + 50;
     }
   }
 }
@@ -327,6 +503,7 @@ int game2_tick()
   int y;
   int i;
   int udt = 0;
+  int smarty = 0;
   lasttick = tick;
   tick = clock();
 
@@ -364,9 +541,9 @@ int game2_tick()
           TilePlayer.localtile.X = x;
           TilePlayer.localtile.Y = y;
           if(screen)
-           draw_sprite("select1",x*100,y*100);
-            else
-          draw_sprite("select2",x*100,y*100);
+            draw_sprite("select1",x*100,y*100);
+          else
+            draw_sprite("select2",x*100,y*100);
         }
 
 
@@ -377,11 +554,63 @@ int game2_tick()
 
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
 
-    for(i = 0; i < SMARTTILES; i++)
+    if(editsmart == 1)
     {
-      if(SmartTiles[i].Tile == TilePlayer.rawtile)
+      // If our selected smart tile isn't one we're stood on then reset
+      if(SmartTiles[selectedsmart].Tile != TilePlayer.rawtile)
+        selectedsmart = -1;
+
+      for(i = 0; i < SMARTTILES; i++)
       {
-        draw_sprite("smart",TilePlayer.localtile.X*100,TilePlayer.localtile.Y*100);
+        if(SmartTiles[i].Tile == TilePlayer.rawtile)
+        {
+          // If we dont have a selected one, then use the first one we hit
+          if(selectedsmart == -1)
+            selectedsmart = i;
+
+          draw_sprite("smart",TilePlayer.localtile.X*100,TilePlayer.localtile.Y*100);
+          
+          smarty++;
+
+          if(selectedsmart == i)
+          {
+            sprintf(textbuffer,"} %i",SmartTiles[i].ActionTarget);
+            draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
+          }
+          else
+          {
+            sprintf(textbuffer,"] %i",SmartTiles[i].ActionTarget);
+            draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
+          }
+
+          sprintf(textbuffer,"%s",actionnames[SmartTiles[i].Action]);
+          draw_spritetext(textbuffer, 300, 1000 - (smarty*120));
+
+          if(SmartTiles[i].Action == 0)
+          {
+            sprintf(tilenamebuffer,"%i",SmartTiles[i].ActionValue);
+            draw_tile(tilenamebuffer,600,1000 - (smarty*120) - 25);
+          }else if(SmartTiles[i].Action == 1)
+          {
+            sprintf(textbuffer,"%s",Areas[SmartTiles[i].ActionValue].name);
+            draw_spritetext(textbuffer,600,1000 - (smarty*120));
+          }
+        }
+      }
+
+      // If no smart tiles then say
+      if(smarty == 0)
+      {
+        smarty++;
+        sprintf(textbuffer,"No Smart Tiles");
+        draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
+      }
+    }else{
+      // Just a simple highlight if we've not got the smart edit being shown
+      for(i = 0; i < SMARTTILES; i++)
+      {
+        if(SmartTiles[i].Tile == TilePlayer.rawtile)
+          draw_sprite("smart",TilePlayer.localtile.X*100,TilePlayer.localtile.Y*100);
       }
     }
 
@@ -421,7 +650,8 @@ int game2_tick()
     sprintf(tilenamebuffer,"%i",clipboard);
     draw_tile(tilenamebuffer,x,y);
     draw_sprite("select1",x,y);
-
+    sprintf(tilenamebuffer,"%i",clipboard_tileid);
+    draw_spritetext(tilenamebuffer, x+10, y+30);
     draw_spritetext("Clipboard", x-174, y+30);
     
     

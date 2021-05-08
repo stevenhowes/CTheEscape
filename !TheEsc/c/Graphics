@@ -198,6 +198,8 @@ void draw_spritetext(char* text, int x, int y)
         currentx += 20 + 4;
         break;
       case ' ':
+      case '(':
+      case ')':
         currentx += 8 + 4;
         break;
       case '=':
@@ -205,6 +207,7 @@ void draw_spritetext(char* text, int x, int y)
         break;
       case '{':
       case '}':
+      case ']':
         currentx += 26;
         break;
       case '~':

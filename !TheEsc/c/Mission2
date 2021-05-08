@@ -12,7 +12,7 @@ extern _kernel_swi_regs outreg;
 
 #define TILESX 10
 #define TILESY 10
-#define SMARTTILES 100
+#define SMARTTILES 200
 #define AREAS 20
 
 // map[0] is the 'master', [1] and [2] represents what is currently
@@ -111,6 +111,36 @@ void game2_loadsmarttiles(char* filename)
   inreg.r[0] = 16;
   inreg.r[1] = (int) filename;
   inreg.r[2] = (int) SmartTiles;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+ 
+}
+
+void game2_loadareanames(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(Areas))
+  {
+    screen_nobuffer();
+    while (1)
+    printf("Areas exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Areas),length,outreg.r[0]);
+    //exit(0);
+  }
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) Areas;
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
@@ -246,16 +276,7 @@ void game2_setup()
 
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
-  sprintf(areaname,"null");
-  sprintf(Areas[0].name,"corridor");
-  sprintf(Areas[1].name,"shuttle bay");
-  sprintf(Areas[2].name,"briefing room");
-  sprintf(Areas[3].name,"cargo bay");
-  sprintf(Areas[4].name,"arboretum");
-  sprintf(Areas[5].name,"torpedo room 1");
-  sprintf(Areas[6].name,"torpedo room 2");
-  sprintf(Areas[7].name,"sensor control");
-  game2_saveareanames("m2_areas");
+  game2_loadareanames("m2_areas");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
