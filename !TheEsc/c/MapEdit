@@ -321,6 +321,8 @@ void game2_tick_input()
       {
         if(SmartTiles[selectedsmart].Action == 0)
           SmartTiles[selectedsmart].ActionValue++;
+        if(SmartTiles[selectedsmart].Action == 1)
+          SmartTiles[selectedsmart].ActionValue++;
         readmodkey = tick + 10;
       }
     }
@@ -331,6 +333,8 @@ void game2_tick_input()
       if(tick > readmodkey)
       {
         if(SmartTiles[selectedsmart].Action == 0)
+          SmartTiles[selectedsmart].ActionValue--;
+        if(SmartTiles[selectedsmart].Action == 1)
           SmartTiles[selectedsmart].ActionValue--;
         readmodkey = tick + 10;
       }
