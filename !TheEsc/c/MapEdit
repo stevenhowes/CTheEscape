@@ -347,6 +347,17 @@ void game2_tick_input()
       }
     }
 
+    // D - Delete SmartTile
+    if(input_readkey(50))
+    {
+      if(tick > readmodkey)
+      {
+        SmartTiles[selectedsmart].Tile = -1;
+        readmodkey = tick + 50;
+      }
+    }
+    
+
     // C - Create smart tile
     if(input_readkey(82))
     {
