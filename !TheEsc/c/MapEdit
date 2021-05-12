@@ -157,7 +157,7 @@ void game2_savesmarttiles(char* filename)
 }
 
 
-void game2_getnewsmarttile()
+int game2_getnewsmarttile()
 {
   int i;
   for(i = 0; i < SMARTTILES; i++)
@@ -167,9 +167,14 @@ void game2_getnewsmarttile()
       SmartTiles[i].Tile = TilePlayer.rawtile;
       SmartTiles[i].Action = 0;
       SmartTiles[i].ActionValue = 0;
-      return;
+      return i;
     }
   }
+  
+    screen_nobuffer();
+    printf("Couldn't allocate new spart tile.");
+    exit(0);
+  return -1;
 }
 
 void game2_loadmap(char* filename)
@@ -252,6 +257,8 @@ void game2_tick_input()
 {
   int x,y;
   int oldselectedsmart;
+  int i,tmptileid;
+
   oldselectedsmart = selectedsmart;
   if(editsmart == 1)
   {
@@ -468,6 +475,21 @@ void game2_tick_input()
       if(tick > readmodkey)
       {
         fullmap[TilePlayer.rawtile] = clipboard;
+
+        for(i = 0; i < SMARTTILES; i++)
+        {
+          if(SmartTiles[i].Tile == clipboard_tileid)
+          {
+            tmptileid = game2_getnewsmarttile();
+
+            if(tmptileid > -1)
+            {
+              SmartTiles[tmptileid].ActionTarget = SmartTiles[i].ActionTarget;
+              SmartTiles[tmptileid].Action = SmartTiles[i].Action;
+              SmartTiles[tmptileid].ActionValue = SmartTiles[i].ActionValue;
+            }
+          }
+        }
         readmodkey = tick + 10;
       }
     }
