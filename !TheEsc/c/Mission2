@@ -257,18 +257,18 @@ void game2_setup()
   screen_flipbuffer();
   screen_clear();
   
-  TilePlayer.location.X = 125;
-  TilePlayer.location.Y = 125;
+  TilePlayer.location.X = 102;
+  TilePlayer.location.Y = 102;
   
-  TilePlayer.hitbox_bl.X = 30;
+  TilePlayer.hitbox_bl.X = 0;
   TilePlayer.hitbox_bl.Y = 0;
-  TilePlayer.hitbox_tr.X = 60;
-  TilePlayer.hitbox_tr.Y = 30;
+  TilePlayer.hitbox_tr.X = 80;
+  TilePlayer.hitbox_tr.Y = 80;
   
-  TilePlayer.drawbox_bl.X = 5;
+  TilePlayer.drawbox_bl.X = 0;
   TilePlayer.drawbox_bl.Y = 0;
-  TilePlayer.drawbox_tr.X = 60;
-  TilePlayer.drawbox_tr.Y = 75;
+  TilePlayer.drawbox_tr.X = 80;
+  TilePlayer.drawbox_tr.Y = 80;
   
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
@@ -321,7 +321,7 @@ void game2_tick_input()
   if(input_readkey(57))
   {
     TilePlayer.location.Y += 3 * (tick - lasttick);
-    if(TilePlayer.location.Y > (950))
+    if(TilePlayer.location.Y > (910))
     {
       TilePlayer.location.Y = 100;
       TilePlayer.mapoffset.Y += 10;
@@ -363,7 +363,7 @@ void game2_tick_input()
   if(input_readkey(121))
   {
     TilePlayer.location.X += 3 * (tick - lasttick);
-    if(TilePlayer.location.X > (930))
+    if(TilePlayer.location.X > (910))
     {
       TilePlayer.location.X = 100;
       TilePlayer.mapoffset.X += 10;
