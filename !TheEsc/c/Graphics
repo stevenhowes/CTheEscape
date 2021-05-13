@@ -139,6 +139,42 @@ void draw_sprite(char* spritename,int x, int y)
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
 
+void draw_sprite_flippedh(char* spritename,int x, int y)
+{
+  // SpriteOp 32
+  inreg.r[0] = 256+33;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = (int) spritename;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+  draw_sprite(spritename,x,y);
+
+  // SpriteOp 32
+  inreg.r[0] = 256+33;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = (int) spritename;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+}
+
+void draw_sprite_flippedv(char* spritename,int x, int y)
+{
+  // SpriteOp 47
+  inreg.r[0] = 256+47;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = (int) spritename;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+  draw_sprite(spritename,x,y);
+
+  // SpriteOp 47
+  inreg.r[0] = 256+47;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = (int) spritename;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+}
+
 void draw_letter(char* spritename,int x, int y)
 {
   // SpriteOp 34 to put sprite at a location

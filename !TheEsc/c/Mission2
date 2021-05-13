@@ -37,6 +37,11 @@ struct Area_s {
 
 struct Area_s Areas[AREAS];
 
+#define DIRECTION_DOWN 0
+#define DIRECTION_UP 1
+#define DIRECTION_LEFT 2
+#define DIRECTION_RIGHT 3
+
 struct TilePlayer_s {
   struct EntityLocation_s location;
   struct EntityLocation_s lastlocation;
@@ -48,6 +53,7 @@ struct TilePlayer_s {
   struct EntityLocation_s lastmapoffset;
   struct EntityLocation_s localtile;
   int rawtile;
+  unsigned char direction;
 };
 
 struct TilePlayer_s TilePlayer;
@@ -270,6 +276,8 @@ void game2_setup()
   TilePlayer.drawbox_tr.X = 80;
   TilePlayer.drawbox_tr.Y = 80;
   
+  TilePlayer.direction = DIRECTION_DOWN;
+  
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
@@ -329,6 +337,7 @@ void game2_tick_input()
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
     movedy = 1;
+    TilePlayer.direction = DIRECTION_UP;
   }
   else if(input_readkey(41))// Down arrow
   {
@@ -344,6 +353,7 @@ void game2_tick_input()
         TilePlayer.location.Y = TilePlayer.lastlocation.Y;
       }
     }
+    TilePlayer.direction = DIRECTION_DOWN;
     movedy = 1;
   }
 
@@ -373,6 +383,7 @@ void game2_tick_input()
       TilePlayer.mapoffset.X += 10;
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
+    TilePlayer.direction = DIRECTION_RIGHT;
   }
   else if(input_readkey(25))// Left arrow
   {
@@ -388,6 +399,7 @@ void game2_tick_input()
         TilePlayer.location.X = TilePlayer.lastlocation.X;
       }
     }
+    TilePlayer.direction = DIRECTION_LEFT;
   }
 
   if(game2_check_collide())
@@ -475,7 +487,22 @@ int game2_tick()
 
     game2_tick_input();
 
-    draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
+    if(TilePlayer.direction == DIRECTION_DOWN)
+    {
+      draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
+    }
+    else if(TilePlayer.direction == DIRECTION_UP)
+    {
+      draw_sprite_flippedh("man",TilePlayer.location.X,TilePlayer.location.Y);
+    }
+    else if(TilePlayer.direction == DIRECTION_RIGHT)
+    {
+      draw_sprite("manrot",TilePlayer.location.X,TilePlayer.location.Y);
+    }
+    else if(TilePlayer.direction == DIRECTION_LEFT)
+    {
+      draw_sprite_flippedv("manrot",TilePlayer.location.X,TilePlayer.location.Y);
+    }
 
 #ifdef M2_DEBUG_HITBOXES
     draw_rectangle(
