@@ -311,14 +311,15 @@ int game2_check_collide()
 
 void game2_tick_input()
 {
+  char movedy = 0;
+
   // Store in case we have a vertical collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
   TilePlayer.lastlocation.Y = TilePlayer.location.Y;
   TilePlayer.lastmapoffset.X = TilePlayer.mapoffset.X;
   TilePlayer.lastmapoffset.Y = TilePlayer.mapoffset.Y;
-  
-  // Up arrow
-  if(input_readkey(57))
+
+  if(input_readkey(57))// Up arrow
   {
     TilePlayer.location.Y += 3 * (tick - lasttick);
     if(TilePlayer.location.Y > (910))
@@ -327,10 +328,9 @@ void game2_tick_input()
       TilePlayer.mapoffset.Y += 10;
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
+    movedy = 1;
   }
-
-  // Down arrow
-  if(input_readkey(41))
+  else if(input_readkey(41))// Down arrow
   {
     TilePlayer.location.Y -= 3 * (tick - lasttick);
     if(TilePlayer.location.Y < (10))
@@ -344,6 +344,7 @@ void game2_tick_input()
         TilePlayer.location.Y = TilePlayer.lastlocation.Y;
       }
     }
+    movedy = 1;
   }
 
 
@@ -355,12 +356,15 @@ void game2_tick_input()
     TilePlayer.mapoffset.Y = TilePlayer.lastmapoffset.Y;
   }
 
+  // Dont allow horizontal and vertical - makes movement sketchy
+  if(movedy == 1)
+    return;
+
   // Store in case we have a horizontal collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
   TilePlayer.lastlocation.Y = TilePlayer.location.Y;
 
-  // Right arrow
-  if(input_readkey(121))
+  if(input_readkey(121))// Right arrow
   {
     TilePlayer.location.X += 3 * (tick - lasttick);
     if(TilePlayer.location.X > (910))
@@ -370,9 +374,7 @@ void game2_tick_input()
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
   }
-
-  // Left arrow
-  if(input_readkey(25))
+  else if(input_readkey(25))// Left arrow
   {
     TilePlayer.location.X -= 3 * (tick - lasttick);
     if(TilePlayer.location.X < (10))
