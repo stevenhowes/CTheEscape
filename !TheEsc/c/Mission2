@@ -55,6 +55,10 @@ struct TilePlayer_s {
   int rawtile;
   unsigned char direction;
   unsigned char facedirection;
+  unsigned char sprite[13];
+  unsigned char basesprite[13];
+  unsigned char animframe;
+  int nextanimframe;
 };
 
 struct TilePlayer_s TilePlayer;
@@ -250,6 +254,8 @@ void game2_setup()
 
   TilePlayer.direction = DIRECTION_NONE;
   TilePlayer.facedirection = 1;
+  TilePlayer.animframe = 0;
+  TilePlayer.nextanimframe = 0;
 
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
@@ -347,7 +353,16 @@ void game2_tick_input()
 
   // Store the last movement so we know where to face an idle player
   if(TilePlayer.direction > 0)
+  {
     TilePlayer.facedirection = TilePlayer.direction;
+    if(tick > TilePlayer.nextanimframe)
+    {
+      TilePlayer.animframe++;
+      TilePlayer.nextanimframe = tick + 10;
+    }
+    if(TilePlayer.animframe > 3)
+      TilePlayer.animframe = 0;
+  }
 
   // Store in case we have a vertical collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
@@ -431,6 +446,8 @@ int game2_tick()
   int x;
   int y;
   int i;
+  char flipv = 0;
+  char fliph = 0;
 
   lasttick = tick;
   tick = clock();
@@ -502,24 +519,68 @@ int game2_tick()
       }
     }
 
-    game2_tick_input();
+  game2_tick_input();
 
   if((TilePlayer.facedirection & (1 << DIRECTION_N)) && (TilePlayer.facedirection & (1 << DIRECTION_E)))        //NE
-    draw_sprite_flippedh("man_se",TilePlayer.location.X,TilePlayer.location.Y);
-  else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_E)))   // SE
-    draw_sprite("man_se",TilePlayer.location.X,TilePlayer.location.Y);
-  else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // SW
-    draw_sprite_flippedv("man_se",TilePlayer.location.X,TilePlayer.location.Y);
-  else if((TilePlayer.facedirection & (1 << DIRECTION_N)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // NW
-    draw_sprite_flippedhv("man_se",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_N))                                                    // N
-      draw_sprite_flippedh("man_s",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_S))                                                    // S
-      draw_sprite("man_s",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_E))                                                    // E
-      draw_sprite("man_e",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_W))                                                    // W
-      draw_sprite_flippedv("man_e",TilePlayer.location.X,TilePlayer.location.Y);
+  {
+    fliph = 1;
+    sprintf(TilePlayer.basesprite, "man_se");
+  }else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_E)))   // SE
+  {
+    sprintf(TilePlayer.basesprite, "man_se");
+  }else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // SW
+  {
+    flipv = 1;
+    sprintf(TilePlayer.basesprite, "man_se");
+  }else if((TilePlayer.facedirection & (1 << DIRECTION_N)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // NW
+  {
+    flipv = 1;
+    fliph = 1;
+    sprintf(TilePlayer.basesprite, "man_se");
+  }else if(TilePlayer.facedirection & (1 << DIRECTION_N))                                                    // N
+  {
+    fliph = 1;
+    sprintf(TilePlayer.basesprite, "man_s");
+  }else if(TilePlayer.facedirection & (1 << DIRECTION_S))                                                    // S
+  {
+    sprintf(TilePlayer.basesprite, "man_s");
+  }else if(TilePlayer.facedirection & (1 << DIRECTION_E))                                                    // E
+  {
+    sprintf(TilePlayer.basesprite, "man_e");
+  }else if(TilePlayer.facedirection & (1 << DIRECTION_W))                                                    // W
+  {
+    flipv = 1;
+    sprintf(TilePlayer.basesprite, "man_e");
+  }
+
+  if(TilePlayer.animframe == 0)
+    sprintf(TilePlayer.sprite, "%s",TilePlayer.basesprite);
+  if(TilePlayer.animframe == 1)
+    sprintf(TilePlayer.sprite, "%s_l",TilePlayer.basesprite);
+  if(TilePlayer.animframe == 2)
+    sprintf(TilePlayer.sprite, "%s",TilePlayer.basesprite);
+  if(TilePlayer.animframe == 3)
+  {
+    // Use 'right' for diagonals, otherwise we flip
+    if(strlen(TilePlayer.basesprite) > 5)
+      sprintf(TilePlayer.sprite, "%s_r",TilePlayer.basesprite);
+     else
+     {
+      sprintf(TilePlayer.sprite, "%s_l",TilePlayer.basesprite);
+     }
+  }
+
+  draw_spritetext("#############", 1020, 650);
+  draw_spritetext(TilePlayer.sprite, 1020, 650);
+
+  if(fliph && flipv)
+    draw_sprite_flippedhv(TilePlayer.sprite,TilePlayer.location.X,TilePlayer.location.Y);
+  else if(fliph)
+    draw_sprite_flippedh(TilePlayer.sprite,TilePlayer.location.X,TilePlayer.location.Y);
+  else if(flipv)
+    draw_sprite_flippedv(TilePlayer.sprite,TilePlayer.location.X,TilePlayer.location.Y);
+  else
+    draw_sprite(TilePlayer.sprite,TilePlayer.location.X,TilePlayer.location.Y);
 
 #ifdef M2_DEBUG_HITBOXES
     draw_rectangle(

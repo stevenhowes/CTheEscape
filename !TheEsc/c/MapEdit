@@ -577,17 +577,14 @@ int game2_tick()
           map[2][x][y] = 255;
           TilePlayer.localtile.X = x;
           TilePlayer.localtile.Y = y;
-          if(screen)
-            draw_sprite("select1",x*100,y*100);
-          else
-            draw_sprite("select2",x*100,y*100);
+          draw_sprite("select1",x*100,y*100);
         }
 
 
       }
     }
 
-    draw_sprite("lcarsblack",1000,DISPLAY_Y-164);
+    draw_sprite("commspanel",1000,DISPLAY_Y-164);
 
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
 
@@ -659,8 +656,6 @@ int game2_tick()
     draw_spritetext(textbuffer, 1070, 950);
 
     game2_tick_input();
-
-    draw_sprite("cursor",TilePlayer.location.X,TilePlayer.location.Y);
 
     x = 1100;
     y = 600;
