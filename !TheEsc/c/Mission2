@@ -9,7 +9,6 @@ extern int screen;
 extern _kernel_swi_regs inreg;
 extern _kernel_swi_regs outreg;
 
-
 #define TILESX 10
 #define TILESY 10
 #define SMARTTILES 200
@@ -43,7 +42,6 @@ struct Area_s Areas[AREAS];
 #define DIRECTION_S 2
 #define DIRECTION_W 3
 
-
 struct TilePlayer_s {
   struct EntityLocation_s location;
   struct EntityLocation_s lastlocation;
@@ -70,32 +68,6 @@ struct SmartTile_s {
 
 struct SmartTile_s SmartTiles[SMARTTILES];
 
-/************VVV TO BE REMOVED/MOVED TO MAPEDIT VVV***********/
-void game2_savesmarttiles(char* filename)
-{
-  // Attempt to get file info
-  inreg.r[0] = 10;
-  inreg.r[1] = (int) filename;
-  inreg.r[2] = 0xffd;
-  inreg.r[4] = (int) SmartTiles;
-  inreg.r[5] = (int) SmartTiles + (sizeof(SmartTiles));
-
-  _kernel_swi(OS_File,&inreg,&outreg);
- 
-}
-void game2_saveareanames(char* filename)
-{
-  // Attempt to get file info
-  inreg.r[0] = 10;
-  inreg.r[1] = (int) filename;
-  inreg.r[2] = 0xffd;
-  inreg.r[4] = (int) Areas;
-  inreg.r[5] = (int) Areas + (sizeof(Areas));
-
-  _kernel_swi(OS_File,&inreg,&outreg);
- 
-}
-/************^^^ TO BE REMOVED/MOVED TO MAPEDIT ^^^***********/
 void game2_loadsmarttiles(char* filename)
 {
   int length;
@@ -112,8 +84,7 @@ void game2_loadsmarttiles(char* filename)
   {
     screen_nobuffer();
     while (1)
-    printf("Smarttiles exceeds %d bytes (%d bytes) object type is %d\n",sizeof(SmartTiles),length,outreg.r[0]);
-    //exit(0);
+      printf("Smarttiles exceeds %d bytes (%d bytes) object type is %d\n",sizeof(SmartTiles),length,outreg.r[0]);
   }
 
   // Attempt to get file info
@@ -123,7 +94,6 @@ void game2_loadsmarttiles(char* filename)
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
 }
 
 void game2_loadareanames(char* filename)
@@ -142,8 +112,7 @@ void game2_loadareanames(char* filename)
   {
     screen_nobuffer();
     while (1)
-    printf("Areas exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Areas),length,outreg.r[0]);
-    //exit(0);
+      printf("Areas exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Areas),length,outreg.r[0]);
   }
 
   // Attempt to get file info
@@ -153,7 +122,6 @@ void game2_loadareanames(char* filename)
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
- 
 }
 
 void game2_loadmap(char* filename)
@@ -171,10 +139,10 @@ void game2_loadmap(char* filename)
   if(length > sizeof(fullmap))
   {
     screen_nobuffer();
-    printf("Map exceeds %d bytes (%d bytes) object type is %d\n",sizeof(fullmap),length,outreg.r[0]);
-    exit(0);
+    while(1)
+      printf("Map exceeds %d bytes (%d bytes) object type is %d\n",sizeof(fullmap),length,outreg.r[0]);
   }
-  
+
   // Attempt to get file info
   inreg.r[0] = 16;
   inreg.r[1] = (int) filename;
@@ -191,6 +159,7 @@ void game2_death()
 {
   int currentstart = 0;
   int introframe = 0;
+
   sound_voices(4);
 
   sound_set_voice(1,"WaveSynth-Beep");
@@ -265,20 +234,20 @@ void game2_setup()
   screen_clear();
   screen_flipbuffer();
   screen_clear();
-  
+
   TilePlayer.location.X = 102;
   TilePlayer.location.Y = 102;
   
-  TilePlayer.hitbox_bl.X = 0;
-  TilePlayer.hitbox_bl.Y = 0;
-  TilePlayer.hitbox_tr.X = 80;
-  TilePlayer.hitbox_tr.Y = 80;
-  
+  TilePlayer.hitbox_bl.X = 10;
+  TilePlayer.hitbox_bl.Y = 10;
+  TilePlayer.hitbox_tr.X = 70;
+  TilePlayer.hitbox_tr.Y = 70;
+
   TilePlayer.drawbox_bl.X = 0;
   TilePlayer.drawbox_bl.Y = 0;
   TilePlayer.drawbox_tr.X = 80;
   TilePlayer.drawbox_tr.Y = 80;
-  
+
   TilePlayer.direction = DIRECTION_NONE;
   TilePlayer.facedirection = 1;
 
@@ -545,29 +514,12 @@ int game2_tick()
     draw_sprite_flippedhv("man_se",TilePlayer.location.X,TilePlayer.location.Y);
   else if(TilePlayer.facedirection & (1 << DIRECTION_N))                                                    // N
       draw_sprite_flippedh("man_s",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_S))                                                    // N
+  else if(TilePlayer.facedirection & (1 << DIRECTION_S))                                                    // S
       draw_sprite("man_s",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_E))                                                    // N
+  else if(TilePlayer.facedirection & (1 << DIRECTION_E))                                                    // E
       draw_sprite("man_e",TilePlayer.location.X,TilePlayer.location.Y);
-  else if(TilePlayer.facedirection & (1 << DIRECTION_W))                                                    // N
+  else if(TilePlayer.facedirection & (1 << DIRECTION_W))                                                    // W
       draw_sprite_flippedv("man_e",TilePlayer.location.X,TilePlayer.location.Y);
-/*
-    if(TilePlayer.direction == DIRECTION_DOWN)
-    {
-      draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
-    }
-    else if(TilePlayer.direction == DIRECTION_UP)
-    {
-      draw_sprite_flippedh("man",TilePlayer.location.X,TilePlayer.location.Y);
-    }
-    else if(TilePlayer.direction == DIRECTION_RIGHT)
-    {
-      draw_sprite("manrot",TilePlayer.location.X,TilePlayer.location.Y);
-    }
-    else if(TilePlayer.direction == DIRECTION_LEFT)
-    {
-      draw_sprite_flippedv("manrot",TilePlayer.location.X,TilePlayer.location.Y);
-    }*/
 
 #ifdef M2_DEBUG_HITBOXES
     draw_rectangle(

@@ -160,7 +160,7 @@ void draw_sprite_flippedhv(char* spritename,int x, int y)
   inreg.r[1] = (int) buffer;
   inreg.r[2] = (int) spritename;
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
-  
+
   // SpriteOp 32
   inreg.r[0] = 256+33;
   inreg.r[1] = (int) buffer;
