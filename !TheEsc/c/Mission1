@@ -997,10 +997,9 @@ void game1_victory()
 
 void game_draw_comms(char* msg)
 {
-    draw_sprite("commspanel",4,DISPLAY_Y-164);
-  draw_spritetext(
-msg
-, 80, DISPLAY_Y-80);
+  // TODO: Need to scale this properly once font/text is final
+  draw_sprite("commspan1",4,DISPLAY_Y-164);
+  draw_spritetext(msg, 80, DISPLAY_Y-80);
 }
 
 int game1_tick()
