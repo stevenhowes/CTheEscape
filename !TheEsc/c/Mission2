@@ -59,6 +59,7 @@ struct TilePlayer_s {
   unsigned char basesprite[13];
   unsigned char animframe;
   int nextanimframe;
+  int nextanimidle;
 };
 
 struct TilePlayer_s TilePlayer;
@@ -256,6 +257,7 @@ void game2_setup()
   TilePlayer.facedirection = 1;
   TilePlayer.animframe = 0;
   TilePlayer.nextanimframe = 0;
+  TilePlayer.nextanimidle = 0;
 
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
@@ -359,8 +361,12 @@ void game2_tick_input()
     {
       TilePlayer.animframe++;
       TilePlayer.nextanimframe = tick + 10;
+      TilePlayer.nextanimidle = tick + 20;
     }
     if(TilePlayer.animframe > 3)
+      TilePlayer.animframe = 0;
+  }else{
+    if(tick > TilePlayer.nextanimidle)
       TilePlayer.animframe = 0;
   }
 
