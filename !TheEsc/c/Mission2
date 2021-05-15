@@ -563,15 +563,18 @@ int game2_tick()
   {
     // Use 'right' for diagonals, otherwise we flip
     if(strlen(TilePlayer.basesprite) > 5)
+    {
       sprintf(TilePlayer.sprite, "%s_r",TilePlayer.basesprite);
-     else
-     {
+    }
+    else
+    {
+      if((TilePlayer.facedirection & (1 << DIRECTION_N)) || (TilePlayer.facedirection & (1 << DIRECTION_N)))
+        flipv = 1;
+      if((TilePlayer.facedirection & (1 << DIRECTION_E)) || (TilePlayer.facedirection & (1 << DIRECTION_W)))
+        fliph = 1;
       sprintf(TilePlayer.sprite, "%s_l",TilePlayer.basesprite);
-     }
+    }
   }
-
-  draw_spritetext("#############", 1020, 650);
-  draw_spritetext(TilePlayer.sprite, 1020, 650);
 
   if(fliph && flipv)
     draw_sprite_flippedhv(TilePlayer.sprite,TilePlayer.location.X,TilePlayer.location.Y);
