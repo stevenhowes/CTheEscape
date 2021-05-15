@@ -37,10 +37,12 @@ struct Area_s {
 
 struct Area_s Areas[AREAS];
 
-#define DIRECTION_DOWN 0
-#define DIRECTION_UP 1
-#define DIRECTION_LEFT 2
-#define DIRECTION_RIGHT 3
+#define DIRECTION_NONE 0
+#define DIRECTION_N 0
+#define DIRECTION_E 1
+#define DIRECTION_S 2
+#define DIRECTION_W 3
+
 
 struct TilePlayer_s {
   struct EntityLocation_s location;
@@ -54,6 +56,7 @@ struct TilePlayer_s {
   struct EntityLocation_s localtile;
   int rawtile;
   unsigned char direction;
+  unsigned char facedirection;
 };
 
 struct TilePlayer_s TilePlayer;
@@ -276,8 +279,9 @@ void game2_setup()
   TilePlayer.drawbox_tr.X = 80;
   TilePlayer.drawbox_tr.Y = 80;
   
-  TilePlayer.direction = DIRECTION_DOWN;
-  
+  TilePlayer.direction = DIRECTION_NONE;
+  TilePlayer.facedirection = 1;
+
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
@@ -319,7 +323,62 @@ int game2_check_collide()
 
 void game2_tick_input()
 {
-  char movedy = 0;
+  int movex = 0;
+  int movey = 0;
+
+  TilePlayer.direction = 0;
+
+  if(input_readkey(57)) // UP
+    TilePlayer.direction |= 1 << DIRECTION_N;
+  if(input_readkey(41)) // DOWN
+    TilePlayer.direction |= 1 << DIRECTION_S;
+  if(input_readkey(121)) // RIGHT
+    TilePlayer.direction |= 1 << DIRECTION_E;
+  if(input_readkey(25))   // LEFT
+    TilePlayer.direction |= 1 << DIRECTION_W;
+
+  // If Up & Down then cancel both
+  if((TilePlayer.direction & (1 << DIRECTION_N)) && (TilePlayer.direction & (1 << DIRECTION_S)))
+    TilePlayer.direction -= 5;
+  // If Left & Right then cancel both
+  if((TilePlayer.direction & (1 << DIRECTION_E)) && (TilePlayer.direction & (1 << DIRECTION_W)))
+    TilePlayer.direction -= 10;
+
+  // If N
+  if(TilePlayer.direction & (1 << DIRECTION_N))
+    movey += 3;
+  // If S
+  if(TilePlayer.direction & (1 << DIRECTION_S))
+    movey -= 3;
+  // If W
+  if(TilePlayer.direction & (1 << DIRECTION_W))
+    movex -= 3;
+  // If E
+  if(TilePlayer.direction & (1 << DIRECTION_E))
+    movex += 3;
+
+  // Handle diagonals by reducing to sin(45) * 3 (conveniently about 2)
+  if((movex == 3) && (movey == 3)) // NE
+  {
+    movex = 2;
+    movey = 2;
+  }else if((movex == 3) && (movey == -3)) // SW
+  {
+    movex = 2;
+    movey = -2;
+  }else if((movex == -3) && (movey == 3)) // NW
+  {
+    movex = -2;
+    movey = 3;
+  }else if((movex == -3) && (movey == -3)) // SE
+  {
+    movex = -2;
+    movey = -2;
+  }
+
+  // Store the last movement so we know where to face an idle player
+  if(TilePlayer.direction > 0)
+    TilePlayer.facedirection = TilePlayer.direction;
 
   // Store in case we have a vertical collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
@@ -327,22 +386,20 @@ void game2_tick_input()
   TilePlayer.lastmapoffset.X = TilePlayer.mapoffset.X;
   TilePlayer.lastmapoffset.Y = TilePlayer.mapoffset.Y;
 
-  if(input_readkey(57))// Up arrow
+  if(movey > 0)
   {
-    TilePlayer.location.Y += 3 * (tick - lasttick);
+    TilePlayer.location.Y += movey * (tick - lasttick);
     if(TilePlayer.location.Y > (910))
     {
       TilePlayer.location.Y = 100;
       TilePlayer.mapoffset.Y += 10;
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
-    movedy = 1;
-    TilePlayer.direction = DIRECTION_UP;
   }
-  else if(input_readkey(41))// Down arrow
+  else if(movey < 0)
   {
-    TilePlayer.location.Y -= 3 * (tick - lasttick);
-    if(TilePlayer.location.Y < (10))
+    TilePlayer.location.Y += movey * (tick - lasttick);
+   if(TilePlayer.location.Y < (10))
     {
       if(TilePlayer.mapoffset.Y > 0)
       {
@@ -353,10 +410,7 @@ void game2_tick_input()
         TilePlayer.location.Y = TilePlayer.lastlocation.Y;
       }
     }
-    TilePlayer.direction = DIRECTION_DOWN;
-    movedy = 1;
   }
-
 
   if(game2_check_collide())
   {
@@ -366,28 +420,23 @@ void game2_tick_input()
     TilePlayer.mapoffset.Y = TilePlayer.lastmapoffset.Y;
   }
 
-  // Dont allow horizontal and vertical - makes movement sketchy
-  if(movedy == 1)
-    return;
-
   // Store in case we have a horizontal collide
   TilePlayer.lastlocation.X = TilePlayer.location.X;
   TilePlayer.lastlocation.Y = TilePlayer.location.Y;
 
-  if(input_readkey(121))// Right arrow
+  if(movex > 0)
   {
-    TilePlayer.location.X += 3 * (tick - lasttick);
+    TilePlayer.location.X += movex * (tick - lasttick);
     if(TilePlayer.location.X > (910))
     {
       TilePlayer.location.X = 100;
       TilePlayer.mapoffset.X += 10;
       game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
     }
-    TilePlayer.direction = DIRECTION_RIGHT;
   }
-  else if(input_readkey(25))// Left arrow
+  else if(movex < 0)
   {
-    TilePlayer.location.X -= 3 * (tick - lasttick);
+    TilePlayer.location.X += movex * (tick - lasttick);
     if(TilePlayer.location.X < (10))
     {
       if(TilePlayer.mapoffset.X > 0)
@@ -399,7 +448,6 @@ void game2_tick_input()
         TilePlayer.location.X = TilePlayer.lastlocation.X;
       }
     }
-    TilePlayer.direction = DIRECTION_LEFT;
   }
 
   if(game2_check_collide())
@@ -427,7 +475,7 @@ int game2_tick()
     
     draw_spritetext("#############", 1020, 950);
     draw_spritetext(areaname, 1020, 950);
-
+ 
     for(x = 0; x < TILESX; x++)
     {
       for(y = 0; y < TILESY; y++)
@@ -487,6 +535,23 @@ int game2_tick()
 
     game2_tick_input();
 
+  if((TilePlayer.facedirection & (1 << DIRECTION_N)) && (TilePlayer.facedirection & (1 << DIRECTION_E)))        //NE
+    draw_sprite_flippedh("man_se",TilePlayer.location.X,TilePlayer.location.Y);
+  else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_E)))   // SE
+    draw_sprite("man_se",TilePlayer.location.X,TilePlayer.location.Y);
+  else if((TilePlayer.facedirection & (1 << DIRECTION_S)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // SW
+    draw_sprite_flippedv("man_se",TilePlayer.location.X,TilePlayer.location.Y);
+  else if((TilePlayer.facedirection & (1 << DIRECTION_N)) && (TilePlayer.facedirection & (1 << DIRECTION_W)))   // NW
+    draw_sprite_flippedhv("man_se",TilePlayer.location.X,TilePlayer.location.Y);
+  else if(TilePlayer.facedirection & (1 << DIRECTION_N))                                                    // N
+      draw_sprite_flippedh("man_s",TilePlayer.location.X,TilePlayer.location.Y);
+  else if(TilePlayer.facedirection & (1 << DIRECTION_S))                                                    // N
+      draw_sprite("man_s",TilePlayer.location.X,TilePlayer.location.Y);
+  else if(TilePlayer.facedirection & (1 << DIRECTION_E))                                                    // N
+      draw_sprite("man_e",TilePlayer.location.X,TilePlayer.location.Y);
+  else if(TilePlayer.facedirection & (1 << DIRECTION_W))                                                    // N
+      draw_sprite_flippedv("man_e",TilePlayer.location.X,TilePlayer.location.Y);
+/*
     if(TilePlayer.direction == DIRECTION_DOWN)
     {
       draw_sprite("man",TilePlayer.location.X,TilePlayer.location.Y);
@@ -502,7 +567,7 @@ int game2_tick()
     else if(TilePlayer.direction == DIRECTION_LEFT)
     {
       draw_sprite_flippedv("manrot",TilePlayer.location.X,TilePlayer.location.Y);
-    }
+    }*/
 
 #ifdef M2_DEBUG_HITBOXES
     draw_rectangle(
