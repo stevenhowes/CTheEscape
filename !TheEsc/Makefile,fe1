@@ -73,6 +73,10 @@ o.Intro:	c.Intro
 o.Intro:	h.Graphics
 o.Mission1:	c.Mission1
 o.Mission1:	h.Graphics
+o.Mission1:	h.Sound
+o.Mission1:	C:h.swis
+o.Mission1:	C:h.kernel
+o.Mission1:	C:h.kernel
 o.Mission2:	c.Mission2
 o.Mission2:	h.Graphics
 o.Mission2:	C:h.swis

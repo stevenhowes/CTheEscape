@@ -13,6 +13,8 @@ int composition_startcent = -1;
 
 struct CompositionElement composition[COMPOSITION_MAX];
 
+unsigned char audiobuffer[20000];
+
 char *notes[] = {"AX","A#","BX","CX","C#","DX","D#","EX","FX","F#","GX","G#"};
 
 void sound_on()
@@ -194,4 +196,37 @@ int sound_composition_incomplete()
     return 0;
   else
     return 1;
+}
+
+void sound_pcm_loadsample(char* filename)
+{
+  int length;
+
+  memset(audiobuffer,0x00,20000);
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(audiobuffer))
+  {
+    screen_nobuffer();
+    while (1)
+      printf("Sample exceeds %d bytes (%d bytes) object type is %d\n",sizeof(audiobuffer),length,outreg.r[0]);
+  }
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) audiobuffer;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Fill remainder of array with final byte
+  memset(audiobuffer + length,audiobuffer[length-1],sizeof(audiobuffer)-length);
 }

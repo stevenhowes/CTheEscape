@@ -6,7 +6,7 @@
 #include "Graphics.h"
 
 #define SKIP_INTRO
-#define SKIP_MISSION1
+//#define SKIP_MISSION1
 //#define SKIP_MISSION2
 
 // SWI Registers
@@ -51,6 +51,10 @@ void exitfunc () {
   free(buffer);
   free(fontbuffer);
   free(tilebuffer);
+
+  inreg.r[0] = 4;
+  inreg.r[1] = 0;
+  _kernel_swi (DataVox_Unset, &inreg, &outreg);
 }
 
 int main(int argc, char *argv[])

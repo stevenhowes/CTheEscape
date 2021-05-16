@@ -266,6 +266,7 @@ void game2_setup()
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
   game2_loadareanames("m2_areas");
+
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 

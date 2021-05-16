@@ -1,5 +1,42 @@
 #define COMPOSITION_MAX 128
 
+#define DataVox_Type                    0x44380
+#define DataVox_Timed                   0x44381
+#define DataVox_Pitch                   0x44382
+#define DataVox_ReadPitch               0x44383
+#define DataVox_ReadTimer               0x44384
+#define DataVox_ReadType                0x44385
+#define DataVox_SetMemory               0x44386
+#define DataVox_ReadMemory              0x44387
+#define DataVox_ReadAddress             0x44388
+#define DataVox_SetRepeat               0x44389
+#define DataVox_ReadRepeat              0x4438A
+#define DataVox_SetReverse              0x4438B
+#define DataVox_ReadReverse             0x4438C
+#define DataVox_PitchToSample           0x4438D
+#define DataVox_SampleToPitch           0x4438E
+#define DataVox_Duplicate               0x4438F
+#define DataVox_Unset                   0x44390
+#define DataVox_ConvertByte             0x44391
+#define DataVox_ReadBufferFlag          0x44392
+#define DataVox_AllocateChannel         0x44393
+#define DataVox_DeAllocateChannel       0x44394
+#define DataVox_RequestChannel          0x44395
+#define DataVox_ChannelsFree            0x44396
+#define DataVox_ConvertArea             0x44397
+#define DataVox_ChannelFreeMap          0x44398
+#define DataVox_UpCallHandler           0x44399
+#define DataVox_FlushKeys               0x4439A
+#define DataVox_VoiceActive             0x4439B
+#define DataVox_SystemSpeed             0x4439C
+#define DataVox_Version                 0x4439D
+#define DataVox_SlaveChannel            0x4439E
+#define DataVox_ReadMaster              0x4439F
+#define DataVox_ReadUpCallStatus        0x443A0
+#define DataVox_SetUpCallStatus         0x443A1
+#define DataVox_AdjustMemory            0x443A2
+#define DataVox_SetInternalPitch        0x443A3
+
 struct CompositionElement {
   signed short int Start;
   unsigned char Note;
@@ -8,3 +45,5 @@ struct CompositionElement {
   /*unsigned char word alignment*/
   unsigned short int Length;
 };
+
+extern unsigned char audiobuffer[20000];

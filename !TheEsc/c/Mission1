@@ -1,4 +1,7 @@
 #include "Graphics.h"
+#include "Sound.h"
+#include "swis.h"
+#include <kernel.h>
 
 #define PLAYER_Y_START 100
 #define PLAYER_X_SPEED 10
@@ -10,6 +13,9 @@
 #define PROFILE(X) X
 extern sound_composition_save(char *filename);
 extern sound_composition_load(char *filename);
+
+extern _kernel_swi_regs inreg;
+extern _kernel_swi_regs outreg;
 
 enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_end,photon1,photon2,plasma1,plasma2};
 char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2","plasma1","plasma2"};
@@ -140,6 +146,12 @@ void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy, enum sprite_e
     Projectiles[id].nextframe = tick + 10;
     Projectiles[id].damage = damage;
     Projectiles[id].collidable = 1;
+    // Play it
+    inreg.r[0] = 4;
+    inreg.r[1] = -15;
+    inreg.r[2] = 1;
+    inreg.r[3] = 1;
+    _kernel_swi (Sound_Control, &inreg, &outreg);
   }
 
 }
@@ -785,7 +797,31 @@ void game_setup_audio()
   sound_set_voice(1,"WaveSynth-Beep");
   sound_set_voice(2,"Percussion-Noise");
   sound_set_voice(3,"Percussion-Soft");
-  sound_set_voice(4,"Percussion-Noise");
+  sound_set_voice(4,"DataVox-Voice");
+  sound_pcm_loadsample("sounds.torpedo");
+
+
+  inreg.r[0] = 4;
+  inreg.r[1] = (int) audiobuffer;
+  inreg.r[2] = (int) audiobuffer + 20000;
+  _kernel_swi (DataVox_SetMemory, &inreg, &outreg);
+
+  // Unsigned 8-bit PCM
+  inreg.r[0] = 4;
+  inreg.r[1] = 1;
+  _kernel_swi (DataVox_Type, &inreg, &outreg);
+
+  // Not timed
+  inreg.r[0] = 4;
+  inreg.r[1] = 0;
+  _kernel_swi (DataVox_Timed, &inreg, &outreg);
+
+  // Bitrate
+  inreg.r[0] = 4;
+  inreg.r[1] = 4000;  // I was expecting this to be 125 to 8KHz but.... No idea
+  _kernel_swi (DataVox_Pitch, &inreg, &outreg);
+
+
 }
 
 void game_draw_hud()

@@ -2,4 +2,5 @@ Set TheEsc$Dir <Obey$Dir>
 IconSprites <TheEsc$Dir>.!Sprites
 WimpSlot -min 256k -max 256k
 Dir <TheEsc$Dir>
+RmEnsure DataVox 3.69 RmLoad <TheEsc$Dir>.DataVox
 Run <TheEsc$Dir>.!RunImage
