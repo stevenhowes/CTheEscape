@@ -574,7 +574,7 @@ int game2_tick()
     }
     else
     {
-      if((TilePlayer.facedirection & (1 << DIRECTION_N)) || (TilePlayer.facedirection & (1 << DIRECTION_N)))
+      if((TilePlayer.facedirection & (1 << DIRECTION_N)) || (TilePlayer.facedirection & (1 << DIRECTION_S)))
         flipv = 1;
       if((TilePlayer.facedirection & (1 << DIRECTION_E)) || (TilePlayer.facedirection & (1 << DIRECTION_W)))
         fliph = 1;
