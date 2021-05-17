@@ -22,6 +22,8 @@ char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_t
 
 char hudbuffer[63];
 
+unsigned char lastnpcchannel = PCMCHANNEL_NPC1;
+
 struct EntityLocation_s {
   short signed int X,Y;
 };
@@ -146,12 +148,14 @@ void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy, enum sprite_e
     Projectiles[id].nextframe = tick + 10;
     Projectiles[id].damage = damage;
     Projectiles[id].collidable = 1;
-    // Play it
-    inreg.r[0] = 4;
-    inreg.r[1] = -15;
-    inreg.r[2] = 1;
-    inreg.r[3] = 1;
-    _kernel_swi (Sound_Control, &inreg, &outreg);
+
+    // Alternate between channels
+    if(lastnpcchannel == PCMCHANNEL_NPC1)
+      lastnpcchannel = PCMCHANNEL_NPC2;
+    else
+      lastnpcchannel = PCMCHANNEL_NPC1;
+
+    sound_pcm_playsample(lastnpcchannel,PCMSAMPLE_DURNOTORPEDO);
   }
 
 }
@@ -195,6 +199,7 @@ void game_draw_player()
       NPCS[Player.targetleft].location.X + ((NPCS[Player.targetleft].hitbox_bl.X + NPCS[Player.targetleft].hitbox_tr.X)/2) - 1,
       NPCS[Player.targetleft].location.Y + NPCS[Player.targetleft].hitbox_bl.Y
     );
+    sound_pcm_playsample_ifidle(PCMCHANNEL_PLAYER,PCMSAMPLE_PHASER);
   }
 
   if((Player.firingright) && (Player.targetright >= 0))
@@ -219,6 +224,7 @@ void game_draw_player()
       NPCS[Player.targetright].location.X + ((NPCS[Player.targetright].hitbox_bl.X + NPCS[Player.targetright].hitbox_tr.X)/2) - 1,
       NPCS[Player.targetright].location.Y + NPCS[Player.targetright].hitbox_bl.Y
     );
+    sound_pcm_playsample_ifidle(PCMCHANNEL_PLAYER,PCMSAMPLE_PHASER);
   }
 
   if(debugs[dbweapons])
@@ -502,9 +508,7 @@ void game_tick_npcs()
         NPCS[i].collidable = 0;
         NPCS[i].sprite = explode_start;
         NPCS[i].explodenextframe = tick + 4;
-        sound_play(1,-5,0,100);
-        sound_play(3,-15,0,1000);
-        sound_play(2,-10,1,100);
+        sound_pcm_playsample(PCMCHANNEL_AMBIENT,PCMSAMPLE_SHIPEXPLODE);
       }
     }
   }
@@ -792,38 +796,14 @@ void game_tick_input()
 
 void game_setup_audio()
 {
-  sound_voices(4);
-
   sound_set_voice(1,"WaveSynth-Beep");
   sound_set_voice(2,"Percussion-Noise");
   sound_set_voice(3,"Percussion-Soft");
-  sound_set_voice(4,"DataVox-Voice");
-  sound_pcm_loadsample("sounds.torpedo");
 
-
-  inreg.r[0] = 4;
-  inreg.r[1] = (int) audiobuffer;
-  inreg.r[2] = (int) audiobuffer + 20000;
-  _kernel_swi (DataVox_SetMemory, &inreg, &outreg);
-
-  // Unsigned 8-bit PCM
-  inreg.r[0] = 4;
-  inreg.r[1] = 1;
-  _kernel_swi (DataVox_Type, &inreg, &outreg);
-
-  // Not timed
-  inreg.r[0] = 4;
-  inreg.r[1] = 0;
-  _kernel_swi (DataVox_Timed, &inreg, &outreg);
-
-  // Bitrate
-  inreg.r[0] = 4;
-  inreg.r[1] = 4000;  // I was expecting this to be 125 to 8KHz but.... No idea
-  _kernel_swi (DataVox_Pitch, &inreg, &outreg);
-
-
+  sound_pcm_loadsample(PCMSAMPLE_DURNOTORPEDO,"sounds.torpedo");
+  sound_pcm_loadsample(PCMSAMPLE_PHASER,"sounds.phaser");
+  sound_pcm_loadsample(PCMSAMPLE_SHIPEXPLODE,"sounds.shpexp");
 }
-
 void game_draw_hud()
 {
   draw_sprite("lcars",4,DISPLAY_Y-164);
@@ -873,7 +853,6 @@ void game1_death()
 {
   int currentstart = 0;
   int introframe = 0;
-  sound_voices(4);
 
   sound_set_voice(1,"WaveSynth-Beep");
   sound_set_voice(2,"WaveSynth-Beep");
@@ -926,9 +905,7 @@ void game_tick_npcs_scatter()
         NPCS[i].collidable = 0;
         NPCS[i].sprite = explode_start;
         NPCS[i].explodenextframe = tick + 4;
-        sound_play(1,-5,0,100);
-        sound_play(3,-15,0,1000);
-        sound_play(2,-10,1,100);
+        sound_pcm_playsample_ifidle(PCMCHANNEL_AMBIENT,PCMSAMPLE_SHIPEXPLODE);
       }
     }
   }

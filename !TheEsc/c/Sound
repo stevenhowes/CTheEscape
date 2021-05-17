@@ -13,7 +13,7 @@ int composition_startcent = -1;
 
 struct CompositionElement composition[COMPOSITION_MAX];
 
-unsigned char audiobuffer[20000];
+struct pcmsample_s pcmsamples[PCMSAMPLE_MAX];
 
 char *notes[] = {"AX","A#","BX","CX","C#","DX","D#","EX","FX","F#","GX","G#"};
 
@@ -28,7 +28,7 @@ void sound_composition_load(char* filename)
   int length;
 
   // Attempt to get file info
-  inreg.r[0] = 13;
+  inreg.r[0] = 5;
   inreg.r[1] = (int) filename;
   _kernel_swi(OS_File,&inreg,&outreg);
 
@@ -38,8 +38,8 @@ void sound_composition_load(char* filename)
   if(length > sizeof(composition))
   {
     screen_nobuffer();
-    printf("Composition exceeds %d bytes (%d bytes)",sizeof(composition),length);
-    exit(0);
+    while(1)
+      printf("Composition exceeds %d bytes (%d bytes)\n",sizeof(composition),length);
   }
   
   // Attempt to get file info
@@ -198,11 +198,54 @@ int sound_composition_incomplete()
     return 1;
 }
 
-void sound_pcm_loadsample(char* filename)
+void sound_pcm_unset(enum pcmchannel_e channel)
+{
+  inreg.r[0] = channel;
+  inreg.r[1] = 0;
+  _kernel_swi (DataVox_Unset, &inreg, &outreg);
+}
+
+void sound_pcm_playsample(enum pcmchannel_e channel, enum pcmsample_e sample)
+{
+  inreg.r[0] = channel;
+  inreg.r[1] = pcmsamples[sample].data;
+  inreg.r[2] = pcmsamples[sample].data + pcmsamples[sample].length;
+  _kernel_swi (DataVox_SetMemory, &inreg, &outreg);
+
+  // Unsigned 8-bit PCM
+  inreg.r[0] = channel;
+  inreg.r[1] = 1;
+  _kernel_swi (DataVox_Type, &inreg, &outreg);
+
+  // Not timed
+  inreg.r[0] = channel;
+  inreg.r[1] = 0;
+  _kernel_swi (DataVox_Timed, &inreg, &outreg);
+
+  // Bitrate
+  inreg.r[0] = channel;
+  inreg.r[1] = 4000;  // I was expecting this to be 125 to 8KHz but.... No idea
+  _kernel_swi (DataVox_Pitch, &inreg, &outreg);
+
+    // Play it
+    inreg.r[0] = channel;
+    inreg.r[1] = -15;
+    inreg.r[2] = 1;
+    inreg.r[3] = 1;
+    _kernel_swi (Sound_Control, &inreg, &outreg);
+}
+
+void sound_pcm_playsample_ifidle(enum pcmchannel_e channel, enum pcmsample_e sample)
+{
+  inreg.r[0] = channel;
+  _kernel_swi (DataVox_ReadAddress, &inreg, &outreg);
+  if(!outreg.r[1])
+    sound_pcm_playsample(channel, sample);
+}
+
+void sound_pcm_loadsample(enum pcmsample_e sample, char* filename)
 {
   int length;
-
-  memset(audiobuffer,0x00,20000);
 
   // Attempt to get file info
   inreg.r[0] = 5;
@@ -212,21 +255,21 @@ void sound_pcm_loadsample(char* filename)
   // Length will be in R4 if it exists
   length = outreg.r[4];
 
-  if(length > sizeof(audiobuffer))
+  if(length > 100000)
   {
     screen_nobuffer();
     while (1)
-      printf("Sample exceeds %d bytes (%d bytes) object type is %d\n",sizeof(audiobuffer),length,outreg.r[0]);
+      printf("Sample exceeds %d bytes (%d bytes) object type is %d\n",100000,length,outreg.r[0]);
   }
+
+  pcmsamples[sample].length = length;
+  pcmsamples[sample].data = malloc(length);
 
   // Attempt to get file info
   inreg.r[0] = 16;
   inreg.r[1] = (int) filename;
-  inreg.r[2] = (int) audiobuffer;
+  inreg.r[2] = (int) pcmsamples[sample].data;
   inreg.r[3] = 0;
 
   _kernel_swi(OS_File,&inreg,&outreg);
-
-  // Fill remainder of array with final byte
-  memset(audiobuffer + length,audiobuffer[length-1],sizeof(audiobuffer)-length);
 }

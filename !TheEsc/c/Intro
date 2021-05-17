@@ -7,7 +7,6 @@ void intro()
 {
   int currentstart = 0;
   int introframe = 0;
-  sound_voices(4);
 
   sound_set_voice(1,"WaveSynth-Beep");
   sound_set_voice(2,"WaveSynth-Beep");

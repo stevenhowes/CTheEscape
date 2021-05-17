@@ -37,6 +37,15 @@
 #define DataVox_AdjustMemory            0x443A2
 #define DataVox_SetInternalPitch        0x443A3
 
+enum pcmchannel_e{
+  PCMCHANNEL_UI = 5, 
+  PCMCHANNEL_PLAYER = 5, 
+  PCMCHANNEL_NPC1 = 6, 
+  PCMCHANNEL_NPC2 = 7, 
+  PCMCHANNEL_AMBIENT = 8
+  };
+enum pcmsample_e{PCMSAMPLE_DURNOTORPEDO, PCMSAMPLE_PHASER, PCMSAMPLE_SHIPEXPLODE, PCMSAMPLE_MAX};
+
 struct CompositionElement {
   signed short int Start;
   unsigned char Note;
@@ -46,4 +55,9 @@ struct CompositionElement {
   unsigned short int Length;
 };
 
-extern unsigned char audiobuffer[20000];
+struct pcmsample_s {
+  int data;
+  unsigned int length;
+};
+
+extern struct pcmsample_s pcmsamples[PCMSAMPLE_MAX];
