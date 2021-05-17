@@ -255,7 +255,7 @@ void sound_pcm_loadsample(enum pcmsample_e sample, char* filename)
   // Length will be in R4 if it exists
   length = outreg.r[4];
 
-  if(length > 100000)
+  if(length > 96000)
   {
     screen_nobuffer();
     while (1)

@@ -95,7 +95,8 @@ struct Player_s Player;
 extern void game_respawn_npc(int id);
 extern int tick;
 extern int lasttick;
-
+unsigned char tractorstart = 0;
+unsigned char hailstart = 0;
 enum debugs_e{dbbase,dbhitbox,dbweapons,dbinput,dbperformance,dbnpcs,dbprojectiles,dbmax};
 int debugs[dbmax];
 
@@ -803,6 +804,8 @@ void game_setup_audio()
   sound_pcm_loadsample(PCMSAMPLE_DURNOTORPEDO,"sounds.torpedo");
   sound_pcm_loadsample(PCMSAMPLE_PHASER,"sounds.phaser");
   sound_pcm_loadsample(PCMSAMPLE_SHIPEXPLODE,"sounds.shpexp");
+  sound_pcm_loadsample(PCMSAMPLE_TRACTOR,"sounds.tractor");
+  sound_pcm_loadsample(PCMSAMPLE_HAIL,"sounds.hail");
 }
 void game_draw_hud()
 {
@@ -1031,6 +1034,11 @@ int game1_tick()
     if(Player.remainingdistance <= 80000)
     {
       PROFILE(game_draw_tractor());
+      if(!tractorstart)
+      {
+        tractorstart = 1;
+        sound_pcm_playsample(PCMCHANNEL_AMBIENT,PCMSAMPLE_TRACTOR);
+      }
     }
 
     game_tick_endingcentre();
@@ -1043,6 +1051,11 @@ int game1_tick()
     PROFILE(game_draw_player());
     PROFILE(game_draw_npcs());
     PROFILE(game_draw_projectiles());
+    if(!hailstart)
+    {
+      hailstart = 1;
+      sound_pcm_playsample(PCMCHANNEL_AMBIENT,PCMSAMPLE_HAIL);
+    }
     game_draw_comms("shuttlepod phoebe - this is the USS Archimedes.\npower down your engines and stand by for\nimmediate tractor beam recovery.");
     return 0;
   }
