@@ -1031,6 +1031,10 @@ int game1_tick()
     return 2;
   }else if (Player.remainingdistance <= 120000)
   {
+    // Stop firing phasers so they dont get stuck
+    Player.firingleft = 0;
+    Player.firingright = 0;
+
     if(Player.remainingdistance <= 80000)
     {
       PROFILE(game_draw_tractor());
