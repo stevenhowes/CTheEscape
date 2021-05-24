@@ -72,6 +72,8 @@ int main(int argc, char *argv[])
   sound_set_voice(7,"DataVox-Voice");
   sound_set_voice(8,"DataVox-Voice");
 
+  sound_pcm_nullsamples();
+
   // Set initial display mode
   display_mode(DISPLAY_MODE);
   screen_clear();
@@ -92,6 +94,9 @@ int main(int argc, char *argv[])
   screen_clear();
 
 #ifndef SKIP_MISSION1
+  // Unload any audio samples we dont need
+  sound_pcm_clearsamples();
+
   // Mission 1
   while(lastoutcome == 1)
   {
@@ -109,6 +114,9 @@ int main(int argc, char *argv[])
 #endif
 
 #ifndef SKIP_MISSION2
+  // Unload any audio samples we dont need
+  sound_pcm_clearsamples();
+
   lastoutcome = 1;
 
   load_sprites("Tiles",&tilebuffer);

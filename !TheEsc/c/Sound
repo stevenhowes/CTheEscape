@@ -198,6 +198,30 @@ int sound_composition_incomplete()
     return 1;
 }
 
+void sound_pcm_nullsamples()
+{
+  int i;
+  for(i=0; i<PCMSAMPLE_MAX; i++)
+  {
+    pcmsamples[i].data = NULL;
+    pcmsamples[i].length = -1;
+  }
+}
+
+void sound_pcm_clearsamples()
+{
+  int i;
+  for(i = 0; i < PCMSAMPLE_MAX; i++)
+  {
+    if(pcmsamples[i].data)
+    {
+      free(pcmsamples[i].data);
+      pcmsamples[i].data = NULL;
+      pcmsamples[i].length = -1;
+    }
+  }
+}
+
 void sound_pcm_unset(enum pcmchannel_e channel)
 {
   inreg.r[0] = channel;
@@ -207,6 +231,13 @@ void sound_pcm_unset(enum pcmchannel_e channel)
 
 void sound_pcm_playsample(enum pcmchannel_e channel, enum pcmsample_e sample)
 {
+  if(!pcmsamples[sample].data)
+  {
+   screen_nobuffer();
+    while(1)
+      printf("PCM sample %d played without load\n",sample);
+  }
+
   inreg.r[0] = channel;
   inreg.r[1] = pcmsamples[sample].data;
   inreg.r[2] = pcmsamples[sample].data + pcmsamples[sample].length;
@@ -237,6 +268,13 @@ void sound_pcm_playsample(enum pcmchannel_e channel, enum pcmsample_e sample)
 
 void sound_pcm_playsample_ifidle(enum pcmchannel_e channel, enum pcmsample_e sample)
 {
+  if(!pcmsamples[sample].data)
+  {
+   screen_nobuffer();
+    while(1)
+      printf("PCM sample %d played without load\n",sample);
+  }
+
   inreg.r[0] = channel;
   _kernel_swi (DataVox_ReadAddress, &inreg, &outreg);
   if(!outreg.r[1])
@@ -246,6 +284,9 @@ void sound_pcm_playsample_ifidle(enum pcmchannel_e channel, enum pcmsample_e sam
 void sound_pcm_loadsample(enum pcmsample_e sample, char* filename)
 {
   int length;
+
+  if(pcmsamples[sample].data)
+    return;
 
   // Attempt to get file info
   inreg.r[0] = 5;
