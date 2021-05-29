@@ -83,9 +83,9 @@ struct SmartTile_s SmartTiles[SMARTTILES];
 
 struct EventAction_s {
   int Event;
-  unsigned char Action;         //0=change tile     /    1=change area    /   sound
-  unsigned char ActionValue;    //tile sprite no.   /    area ID          /   sound ID
-  int ActionTarget;             //tile ID           /    n/a              /   channel ID
+  unsigned char Action;         //0=change tile     /    1=change area    /   2=sound     / 3=rearm
+  unsigned char ActionValue;    //tile sprite no.   /    area ID          /   sound ID    / na
+  int ActionTarget;             //tile ID           /    n/a              /   channel ID  / eventid
 };
 struct EventAction_s EventActions[MAXEVENTACTIONS];
 
@@ -116,20 +116,72 @@ void game2_loadevents()
     EventActions[i].ActionTarget = -1;
   }
 
-  sprintf(Events[0].Name,"SetArea");
-  Events[0].Triggered = 0;
-  Events[0].RearmDelay = 500;
-  Events[0].NextRearm = -1;
+  i=0;
 
-  EventActions[0].Event = 0;
-  EventActions[0].Action = 1;
-  EventActions[0].ActionValue = 1;
-  EventActions[0].ActionTarget = -1;
+  sprintf(Events[i].Name,"PlayerStart");
+  Events[i].Triggered = 0;
+  Events[i].RearmDelay = -1;
+  Events[i].NextRearm = -1;
+  i++;
 
-  EventActions[1].Event = 0;
-  EventActions[1].Action = 2;
-  EventActions[1].ActionValue = PCMSAMPLE_DOOR;
-  EventActions[1].ActionTarget = PCMCHANNEL_AMBIENT;
+  sprintf(Events[i].Name,"SBBR-DOOROPEN");
+  Events[i].Triggered = 0;
+  Events[i].RearmDelay = -1;
+  Events[i].NextRearm = -1;
+  i++;
+
+  sprintf(Events[i].Name,"SBBR-DOORCLOSE");
+  Events[i].Triggered = 1;
+  Events[i].RearmDelay = -1;
+  Events[i].NextRearm = -1;
+  i++;
+
+  i=0;
+
+  // PlayerStart
+  EventActions[i].Event = 0;
+  EventActions[i].Action = 1;
+  EventActions[i].ActionValue = 1;
+  EventActions[i].ActionTarget = -1;
+  i++;
+  EventActions[i].Event = 0;
+  EventActions[i].Action = 2;
+  EventActions[i].ActionValue = PCMSAMPLE_HAIL;
+  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
+  i++;
+
+  // SBBR-DOOROPEN
+  EventActions[i].Event = 1;
+  EventActions[i].Action = 0;
+  EventActions[i].ActionValue = 31;
+  EventActions[i].ActionTarget = 713;
+  i++;
+  EventActions[i].Event = 1;
+  EventActions[i].Action = 2;
+  EventActions[i].ActionValue = PCMSAMPLE_DOOR;
+  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
+  i++;
+  EventActions[i].Event = 1;
+  EventActions[i].Action = 3;
+  EventActions[i].ActionTarget = 2;
+  i++;
+
+  // SBBR-DOORCLOSE
+  EventActions[i].Event = 2;
+  EventActions[i].Action = 0;
+  EventActions[i].ActionValue = 29;
+  EventActions[i].ActionTarget = 713;
+  i++;
+  EventActions[i].Event = 2;
+  EventActions[i].Action = 2;
+  EventActions[i].ActionValue = PCMSAMPLE_DOOR;
+  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
+  i++;
+  EventActions[i].Event = 2;
+  EventActions[i].Action = 3;
+  EventActions[i].ActionTarget = 1;
+  i++;
+
 }
 
 void game2_loadsmarttiles(char* filename)
@@ -528,14 +580,10 @@ void game2_triggerevent(int id)
 
   // Don't trigger if we've been fired and not reset
   if(Events[id].Triggered == 1)
-  {
-    printf("Not triggering event %d - %s\n",id,Events[id].Name);
     return;
-  }
 
   // Record firing
   Events[id].Triggered = 1;
-  printf("Triggering event %d - %s\n",id,Events[id].Name);
 
   // Schedule re-arm if required
   if(Events[id].RearmDelay >= 0)
@@ -552,6 +600,8 @@ void game2_triggerevent(int id)
         sprintf(areaname,"%s",Areas[EventActions[i].ActionValue].name);
       else if(EventActions[i].Action == 2)    // Play sound
         sound_pcm_playsample_ifidle(EventActions[i].ActionTarget,EventActions[i].ActionValue);
+      else if(EventActions[i].Action == 3)    // Re-arm
+        Events[EventActions[i].ActionTarget].Triggered = 0;
 
     }
   }
@@ -637,10 +687,8 @@ int game2_tick()
             fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
           else if(SmartTiles[i].Action == 1)    // Change area name
             sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
-          else if(SmartTiles[i].Action == 2)    // Change area name
-          {
+          else if(SmartTiles[i].Action == 2)    // Trigger event
             game2_triggerevent(SmartTiles[i].ActionValue);
-          }
         }
       }
     }
