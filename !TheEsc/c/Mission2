@@ -15,6 +15,9 @@ extern _kernel_swi_regs outreg;
 #define SMARTTILES 200
 #define AREAS 20
 
+#define MAXEVENTS 200
+#define MAXEVENTACTIONS 1000
+
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
 // and we run a compare to see if re-drawing is needed. 0xFF is used
@@ -67,14 +70,67 @@ struct TilePlayer_s {
 
 struct TilePlayer_s TilePlayer;
 
+/* VVV deprecated VVV */
 struct SmartTile_s {
   int Tile;
   int ActionTarget;
   unsigned char Action;
   unsigned char ActionValue;
 };
-
 struct SmartTile_s SmartTiles[SMARTTILES];
+/* ^^^ deprecated ^^^ */
+
+
+struct EventAction_s {
+  int Event;
+  unsigned char Action;         //0=change tile     /    1=change area    /   sound
+  unsigned char ActionValue;    //tile sprite no.   /    area ID          /   sound ID
+  int ActionTarget;             //tile ID           /    n/a              /   channel ID
+};
+struct EventAction_s EventActions[MAXEVENTACTIONS];
+
+struct Event_s {
+  unsigned char Name[16];
+  unsigned char Triggered;
+  int RearmDelay;
+  int NextRearm;
+};
+struct Event_s Events[MAXEVENTS];
+
+void game2_loadevents()
+{
+  int i;
+  for(i = 0; i<MAXEVENTS; i++)
+  {
+    // Default to Triggered with no re-arm so event never fires
+    sprintf(Events[i].Name,"INVALID");
+    Events[i].Triggered = 1;
+    Events[i].RearmDelay = -1;
+    Events[i].NextRearm = -1;
+  }
+  for(i = 0; i<MAXEVENTACTIONS; i++)
+  {
+    EventActions[i].Event = -1;
+    EventActions[i].Action = -1;
+    EventActions[i].ActionValue = -1;
+    EventActions[i].ActionTarget = -1;
+  }
+
+  sprintf(Events[0].Name,"SetArea");
+  Events[0].Triggered = 0;
+  Events[0].RearmDelay = 500;
+  Events[0].NextRearm = -1;
+
+  EventActions[0].Event = 0;
+  EventActions[0].Action = 1;
+  EventActions[0].ActionValue = 1;
+  EventActions[0].ActionTarget = -1;
+
+  EventActions[1].Event = 0;
+  EventActions[1].Action = 2;
+  EventActions[1].ActionValue = PCMSAMPLE_DOOR;
+  EventActions[1].ActionTarget = PCMCHANNEL_AMBIENT;
+}
 
 void game2_loadsmarttiles(char* filename)
 {
@@ -236,8 +292,8 @@ void game2_fillmap(int xoffset, int yoffset)
 
 void game2_setup_audio()
 {
-    sound_pcm_loadsample(PCMSAMPLE_HAIL,"sounds.commbdg");
-    sound_pcm_loadsample(PCMSAMPLE_DOOR,"sounds.door");
+  sound_pcm_loadsample(PCMSAMPLE_HAIL,"sounds.commbdg");
+  sound_pcm_loadsample(PCMSAMPLE_DOOR,"sounds.door");
 }
 
 void game2_setup()
@@ -274,7 +330,7 @@ void game2_setup()
   game2_loadsmarttiles("m2_smart");
   game2_loadareanames("m2_areas");
   game2_setup_audio();
-
+  game2_loadevents();
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
@@ -456,6 +512,54 @@ void game2_tick_input()
   }
 }
 
+void game2_triggerevent(int id)
+{
+  int i;
+
+  // Re-arm if appropriate
+  if(Events[id].NextRearm > 0)
+  {
+    if(tick > Events[id].NextRearm)
+    {
+      Events[id].Triggered = 0;
+      Events[id].NextRearm = -1;
+    }
+  }
+
+  // Don't trigger if we've been fired and not reset
+  if(Events[id].Triggered == 1)
+  {
+    printf("Not triggering event %d - %s\n",id,Events[id].Name);
+    return;
+  }
+
+  // Record firing
+  Events[id].Triggered = 1;
+  printf("Triggering event %d - %s\n",id,Events[id].Name);
+
+  // Schedule re-arm if required
+  if(Events[id].RearmDelay >= 0)
+    Events[id].NextRearm = tick + Events[id].RearmDelay;
+
+  // Go through our actions
+  for(i = 0; i<MAXEVENTACTIONS; i++)
+  {
+    if(EventActions[i].Event == id)
+    {
+      if(EventActions[i].Action == 0)         // Change tile sprite
+        fullmap[EventActions[i].ActionTarget] = EventActions[i].ActionValue;
+      else if(EventActions[i].Action == 1)    // Change area name
+        sprintf(areaname,"%s",Areas[EventActions[i].ActionValue].name);
+      else if(EventActions[i].Action == 2)    // Play sound
+        sound_pcm_playsample_ifidle(EventActions[i].ActionTarget,EventActions[i].ActionValue);
+
+    }
+  }
+  
+
+
+}
+
 int game2_tick()
 {
   int x;
@@ -533,6 +637,10 @@ int game2_tick()
             fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
           else if(SmartTiles[i].Action == 1)    // Change area name
             sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
+          else if(SmartTiles[i].Action == 2)    // Change area name
+          {
+            game2_triggerevent(SmartTiles[i].ActionValue);
+          }
         }
       }
     }
