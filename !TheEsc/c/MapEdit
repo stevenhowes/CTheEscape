@@ -71,6 +71,16 @@ struct SmartTile_s {
 
 struct SmartTile_s SmartTiles[SMARTTILES];
 
+#define MAXEVENTS 200
+
+struct Event_s {
+  unsigned char Name[16];
+  unsigned char Triggered;
+  int RearmDelay;
+  int NextRearm;
+};
+struct Event_s Events[MAXEVENTS];
+
 struct Area_s {
   unsigned char name[16];
 };
@@ -83,6 +93,34 @@ char actionnames[][ACTION_SIZE] =
 { "TileSet",
   "AreaChange"
 };
+
+void game2_loadevents(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(Events))
+  {
+    screen_nobuffer();
+    while (1)
+      printf("Events exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Events),length,outreg.r[0]);
+  }
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) Events;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+}
 
 void game2_loadsmarttiles(char* filename)
 {
@@ -250,6 +288,7 @@ void game2_setup()
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
   game2_loadareanames("m2_areas");
+  game2_loadevents("m2_evt");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
@@ -588,7 +627,7 @@ int game2_tick()
 
           if(SmartTiles[i].Action == 2)
           {
-            sprintf(textbuffer,"Event %d",SmartTiles[i].ActionValue);
+            sprintf(textbuffer,"Event %d: %s",SmartTiles[i].ActionValue,Events[SmartTiles[i].ActionValue].Name);
             draw_spritetext(textbuffer,600,1000 - (smarty*120));
           }
         }
