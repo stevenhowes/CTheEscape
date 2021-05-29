@@ -342,6 +342,8 @@ void game2_tick_input()
       {
         if(SmartTiles[selectedsmart].Action == 2)
           SmartTiles[selectedsmart].ActionValue++;
+        if(SmartTiles[selectedsmart].ActionValue >= MAXEVENTS)
+          SmartTiles[selectedsmart].ActionValue = MAXEVENTS - 1;
         readmodkey = tick + 10;
       }
     }
@@ -353,6 +355,9 @@ void game2_tick_input()
       {
         if(SmartTiles[selectedsmart].Action == 2)
           SmartTiles[selectedsmart].ActionValue--;
+        // Unsigned so this make sense..
+        if(SmartTiles[selectedsmart].ActionValue >= MAXEVENTS)
+          SmartTiles[selectedsmart].ActionValue = 0;
         readmodkey = tick + 10;
       }
     }
@@ -614,6 +619,9 @@ int game2_tick()
           
           smarty++;
 
+            sprintf(textbuffer,"########################################");
+            draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
+            
           if(selectedsmart == i)
           {
             sprintf(textbuffer,"} ");
@@ -628,7 +636,7 @@ int game2_tick()
           if(SmartTiles[i].Action == 2)
           {
             sprintf(textbuffer,"Event %d: %s",SmartTiles[i].ActionValue,Events[SmartTiles[i].ActionValue].Name);
-            draw_spritetext(textbuffer,600,1000 - (smarty*120));
+            draw_spritetext(textbuffer,300,1000 - (smarty*120));
           }
         }
       }
