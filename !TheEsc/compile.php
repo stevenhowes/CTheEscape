@@ -132,40 +132,6 @@
     }
   }
 
-  $blanks = 200 - count($events);
-  while($blanks > 0)
-  {
-    $blanks --;
-    fwrite($fp, "INVALID");
-    
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    
-    fwrite($fp, chr(1));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-    fwrite($fp, chr(0));
-
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-  }
-  fclose($fp);
-
   $fp = fopen('m2_evact,ffd', 'w');
   foreach($eventactions as $eventaction)
   {
@@ -180,25 +146,5 @@
     fwrite($fp, pack('V', $eventaction['ActionTarget'])); // Event
   }
 
-  $blanks = 1000 - count($eventactions);
-  while($blanks > 0)
-  {
-    $blanks --;
-    fwrite($fp, chr(255)); // Event
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-
-    fwrite($fp, chr(255));  // Action
-    fwrite($fp, chr(255));  // ActionValue
-    
-    fwrite($fp, chr(0));    // PAD
-    fwrite($fp, chr(0));    // PAD
-
-    fwrite($fp, chr(255));  // ActionTarget
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-    fwrite($fp, chr(255));
-  }
   fclose($fp);
 ?>

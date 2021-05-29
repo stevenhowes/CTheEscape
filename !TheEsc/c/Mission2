@@ -123,6 +123,17 @@ void game2_saveeventactions(char* filename)
 void game2_loadevents(char* filename)
 {
   int length;
+  int i;
+  
+  // Populate with inactive entries
+  for(i = 0; i<MAXEVENTS; i++)
+  {
+    // Default to Triggered with no re-arm so event never fires
+    sprintf(Events[i].Name,"INVALID");
+    Events[i].Triggered = 1;
+    Events[i].RearmDelay = -1;
+    Events[i].NextRearm = -1;
+  }
 
   // Attempt to get file info
   inreg.r[0] = 5;
@@ -151,6 +162,16 @@ void game2_loadevents(char* filename)
 void game2_loadeventactionss(char* filename)
 {
   int length;
+  int i;
+
+  // Populate with inactive entries
+  for(i = 0; i<MAXEVENTACTIONS; i++)
+  {
+    EventActions[i].Event = -1;
+    EventActions[i].Action = -1;
+    EventActions[i].ActionValue = -1;
+    EventActions[i].ActionTarget = -1;
+  }
 
   // Attempt to get file info
   inreg.r[0] = 5;
