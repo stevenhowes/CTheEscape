@@ -1,6 +1,7 @@
 #include "Graphics.h"
 #include "swis.h"
 #include <kernel.h>
+#include "Sound.h"
 
 extern int tick;
 extern int lasttick;
@@ -53,6 +54,8 @@ struct TilePlayer_s {
   struct EntityLocation_s lastmapoffset;
   struct EntityLocation_s localtile;
   int rawtile;
+  int lastrawtile;
+
   unsigned char direction;
   unsigned char facedirection;
   unsigned char sprite[13];
@@ -231,6 +234,12 @@ void game2_fillmap(int xoffset, int yoffset)
   memcpy(map[0][9],fullmap+yoffset+(xoffset*100)+900,10);
 }
 
+void game2_setup_audio()
+{
+    sound_pcm_loadsample(PCMSAMPLE_HAIL,"sounds.commbdg");
+    sound_pcm_loadsample(PCMSAMPLE_DOOR,"sounds.door");
+}
+
 void game2_setup()
 {
   screen_flipbuffer();
@@ -256,7 +265,7 @@ void game2_setup()
   TilePlayer.animframe = 0;
   TilePlayer.nextanimframe = 0;
   TilePlayer.nextanimidle = 0;
-
+  TilePlayer.lastrawtile = -1;
   memset(map[0],0xFF,100);
   memset(map[1],0xFF,100);
   memset(map[2],0xFF,100);
@@ -264,6 +273,7 @@ void game2_setup()
   game2_loadmap("m2_map");
   game2_loadsmarttiles("m2_smart");
   game2_loadareanames("m2_areas");
+  game2_setup_audio();
 
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
@@ -509,18 +519,21 @@ int game2_tick()
       }
     }
 
+    TilePlayer.lastrawtile = TilePlayer.rawtile;
     TilePlayer.rawtile = (TilePlayer.mapoffset.Y) + TilePlayer.localtile.Y + (TilePlayer.mapoffset.X * 100) + (TilePlayer.localtile.X * 100);
 
-    // Trigger any smart tiles for our centre of mass
-    for(i = 0; i < SMARTTILES; i++)
+    if(TilePlayer.rawtile != TilePlayer.lastrawtile)
     {
-      if(SmartTiles[i].Tile == TilePlayer.rawtile)
+      // Trigger any smart tiles for our centre of mass
+      for(i = 0; i < SMARTTILES; i++)
       {
-        // Change tile sprite
-        if(SmartTiles[i].Action == 0)
-          fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
-        else if(SmartTiles[i].Action == 1)
-          sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
+        if(SmartTiles[i].Tile == TilePlayer.rawtile)
+        {
+          if(SmartTiles[i].Action == 0)         // Change tile sprite
+            fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
+          else if(SmartTiles[i].Action == 1)    // Change area name
+            sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
+        }
       }
     }
 

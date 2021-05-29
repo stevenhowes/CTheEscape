@@ -40,18 +40,14 @@ Squeezeflags = -o $@
 
 
 # Dynamic dependencies:
+o.Graphics:	c.Graphics
+o.Graphics:	C:h.swis
+o.Graphics:	C:h.kernel
+o.Graphics:	C:h.kernel
 o.Input:	c.Input
 o.Input:	C:h.swis
 o.Input:	C:h.kernel
 o.Input:	C:h.kernel
-o.Graphics:	c.Graphics
-o.Graphics:	C:h.swis
-o.Graphics:	C:h.kernel
-o.Graphics:	C:h.kernel
-o.Graphics:	c.Graphics
-o.Graphics:	C:h.swis
-o.Graphics:	C:h.kernel
-o.Graphics:	C:h.kernel
 o.CTheEscape:	c.CTheEscape
 o.CTheEscape:	C:h.swis
 o.CTheEscape:	C:h.kernel
@@ -82,3 +78,4 @@ o.Mission2:	h.Graphics
 o.Mission2:	C:h.swis
 o.Mission2:	C:h.kernel
 o.Mission2:	C:h.kernel
+o.Mission2:	h.Sound
