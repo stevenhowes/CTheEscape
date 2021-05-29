@@ -1,0 +1,17 @@
+AddEvent(0,"PlayerStart",0,-1,-1)
+AddEvent(1,"SBBR-DOOROPEN",0,-1,-1)
+AddEvent(2,"SBBR-DOORCLOSE",1,-1,-1)
+
+Event("PlayerStart")
+ AreaName(1)
+ Sound(8,4)
+
+Event("SBBR-DOOROPEN")
+ SetTile(713,31)
+ Sound(8,5)
+ ReArm("SBBR-DOORCLOSE")
+
+Event("SBBR-DOORCLOSE")
+ SetTile(713,29)
+ Sound(8,5)
+ ReArm("SBBR-DOOROPEN")

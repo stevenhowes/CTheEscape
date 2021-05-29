@@ -97,91 +97,83 @@ struct Event_s {
 };
 struct Event_s Events[MAXEVENTS];
 
-void game2_loadevents()
+void game2_saveevents(char* filename)
 {
-  int i;
-  for(i = 0; i<MAXEVENTS; i++)
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) Events;
+  inreg.r[5] = (int) Events + (sizeof(Events));
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+}
+void game2_saveeventactions(char* filename)
+{
+  // Attempt to get file info
+  inreg.r[0] = 10;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = 0xffd;
+  inreg.r[4] = (int) EventActions;
+  inreg.r[5] = (int) EventActions + (sizeof(EventActions));
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+}
+
+void game2_loadevents(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(Events))
   {
-    // Default to Triggered with no re-arm so event never fires
-    sprintf(Events[i].Name,"INVALID");
-    Events[i].Triggered = 1;
-    Events[i].RearmDelay = -1;
-    Events[i].NextRearm = -1;
+    screen_nobuffer();
+    while (1)
+      printf("Events exceeds %d bytes (%d bytes) object type is %d\n",sizeof(Events),length,outreg.r[0]);
   }
-  for(i = 0; i<MAXEVENTACTIONS; i++)
+
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) Events;
+  inreg.r[3] = 0;
+
+  _kernel_swi(OS_File,&inreg,&outreg);
+}
+
+void game2_loadeventactionss(char* filename)
+{
+  int length;
+
+  // Attempt to get file info
+  inreg.r[0] = 5;
+  inreg.r[1] = (int) filename;
+  _kernel_swi(OS_File,&inreg,&outreg);
+
+  // Length will be in R4 if it exists
+  length = outreg.r[4];
+
+  if(length > sizeof(EventActions))
   {
-    EventActions[i].Event = -1;
-    EventActions[i].Action = -1;
-    EventActions[i].ActionValue = -1;
-    EventActions[i].ActionTarget = -1;
+    screen_nobuffer();
+    while (1)
+      printf("EventActions exceeds %d bytes (%d bytes) object type is %d\n",sizeof(EventActions),length,outreg.r[0]);
   }
 
-  i=0;
+  // Attempt to get file info
+  inreg.r[0] = 16;
+  inreg.r[1] = (int) filename;
+  inreg.r[2] = (int) EventActions;
+  inreg.r[3] = 0;
 
-  sprintf(Events[i].Name,"PlayerStart");
-  Events[i].Triggered = 0;
-  Events[i].RearmDelay = -1;
-  Events[i].NextRearm = -1;
-  i++;
-
-  sprintf(Events[i].Name,"SBBR-DOOROPEN");
-  Events[i].Triggered = 0;
-  Events[i].RearmDelay = -1;
-  Events[i].NextRearm = -1;
-  i++;
-
-  sprintf(Events[i].Name,"SBBR-DOORCLOSE");
-  Events[i].Triggered = 1;
-  Events[i].RearmDelay = -1;
-  Events[i].NextRearm = -1;
-  i++;
-
-  i=0;
-
-  // PlayerStart
-  EventActions[i].Event = 0;
-  EventActions[i].Action = 1;
-  EventActions[i].ActionValue = 1;
-  EventActions[i].ActionTarget = -1;
-  i++;
-  EventActions[i].Event = 0;
-  EventActions[i].Action = 2;
-  EventActions[i].ActionValue = PCMSAMPLE_HAIL;
-  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
-  i++;
-
-  // SBBR-DOOROPEN
-  EventActions[i].Event = 1;
-  EventActions[i].Action = 0;
-  EventActions[i].ActionValue = 31;
-  EventActions[i].ActionTarget = 713;
-  i++;
-  EventActions[i].Event = 1;
-  EventActions[i].Action = 2;
-  EventActions[i].ActionValue = PCMSAMPLE_DOOR;
-  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
-  i++;
-  EventActions[i].Event = 1;
-  EventActions[i].Action = 3;
-  EventActions[i].ActionTarget = 2;
-  i++;
-
-  // SBBR-DOORCLOSE
-  EventActions[i].Event = 2;
-  EventActions[i].Action = 0;
-  EventActions[i].ActionValue = 29;
-  EventActions[i].ActionTarget = 713;
-  i++;
-  EventActions[i].Event = 2;
-  EventActions[i].Action = 2;
-  EventActions[i].ActionValue = PCMSAMPLE_DOOR;
-  EventActions[i].ActionTarget = PCMCHANNEL_AMBIENT;
-  i++;
-  EventActions[i].Event = 2;
-  EventActions[i].Action = 3;
-  EventActions[i].ActionTarget = 1;
-  i++;
-
+  _kernel_swi(OS_File,&inreg,&outreg);
 }
 
 void game2_loadsmarttiles(char* filename)
@@ -382,7 +374,8 @@ void game2_setup()
   game2_loadsmarttiles("m2_smart");
   game2_loadareanames("m2_areas");
   game2_setup_audio();
-  game2_loadevents();
+  game2_loadevents("m2_evt");
+  game2_loadeventactionss("m2_evact");
   game2_fillmap(TilePlayer.mapoffset.X,TilePlayer.mapoffset.Y);
 }
 
