@@ -683,11 +683,7 @@ int game2_tick()
       {
         if(SmartTiles[i].Tile == TilePlayer.rawtile)
         {
-          if(SmartTiles[i].Action == 0)         // Change tile sprite
-            fullmap[SmartTiles[i].ActionTarget] = SmartTiles[i].ActionValue;
-          else if(SmartTiles[i].Action == 1)    // Change area name
-            sprintf(areaname,"%s",Areas[SmartTiles[i].ActionValue].name);
-          else if(SmartTiles[i].Action == 2)    // Trigger event
+          if(SmartTiles[i].Action == 2)    // Trigger event
             game2_triggerevent(SmartTiles[i].ActionValue);
         }
       }

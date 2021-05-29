@@ -165,7 +165,7 @@ int game2_getnewsmarttile()
     if(SmartTiles[i].Tile == -1)
     {
       SmartTiles[i].Tile = TilePlayer.rawtile;
-      SmartTiles[i].Action = 0;
+      SmartTiles[i].Action = 2;
       SmartTiles[i].ActionValue = 0;
       return i;
     }
@@ -262,31 +262,6 @@ void game2_tick_input()
   oldselectedsmart = selectedsmart;
   if(editsmart == 1)
   {
-    // Right arrow
-    if(input_readkey(121))
-    {
-       if(tick > readmodkey)
-      {
-        SmartTiles[selectedsmart].Action++;
-        if(SmartTiles[selectedsmart].Action > 1)
-          SmartTiles[selectedsmart].Action = 1;
-        readmodkey = tick + 20;
-      }
-    }
-
-    // Left arrow
-    if(input_readkey(25))
-    {
-      if(tick > readmodkey)
-      {
-        SmartTiles[selectedsmart].Action--;
-        // Looks weird, but unsigned so -1 is 255
-        if(SmartTiles[selectedsmart].Action > 1)
-          SmartTiles[selectedsmart].Action = 0;
-        readmodkey = tick + 20;
-      }
-    }
-
     // Up arrow
     if(input_readkey(57))
     {
@@ -321,27 +296,23 @@ void game2_tick_input()
       }
     }
 
-    // > - next tile
-    if(input_readkey(103))
+    // Right arrow
+    if(input_readkey(121))
     {
       if(tick > readmodkey)
       {
-        if(SmartTiles[selectedsmart].Action == 0)
-          SmartTiles[selectedsmart].ActionValue++;
-        if(SmartTiles[selectedsmart].Action == 1)
+        if(SmartTiles[selectedsmart].Action == 2)
           SmartTiles[selectedsmart].ActionValue++;
         readmodkey = tick + 10;
       }
     }
 
-    // < - previous tile
-    if(input_readkey(102))
+    // Left arrow
+    if(input_readkey(25))
     {
       if(tick > readmodkey)
       {
-        if(SmartTiles[selectedsmart].Action == 0)
-          SmartTiles[selectedsmart].ActionValue--;
-        if(SmartTiles[selectedsmart].Action == 1)
+        if(SmartTiles[selectedsmart].Action == 2)
           SmartTiles[selectedsmart].ActionValue--;
         readmodkey = tick + 10;
       }
@@ -606,25 +577,18 @@ int game2_tick()
 
           if(selectedsmart == i)
           {
-            sprintf(textbuffer,"} %i",SmartTiles[i].ActionTarget);
+            sprintf(textbuffer,"} ");
             draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
           }
           else
           {
-            sprintf(textbuffer,"] %i",SmartTiles[i].ActionTarget);
+            sprintf(textbuffer,"] ");
             draw_spritetext(textbuffer, 150, 1000 - (smarty*120));
           }
 
-          sprintf(textbuffer,"%s",actionnames[SmartTiles[i].Action]);
-          draw_spritetext(textbuffer, 300, 1000 - (smarty*120));
-
-          if(SmartTiles[i].Action == 0)
+          if(SmartTiles[i].Action == 2)
           {
-            sprintf(tilenamebuffer,"%i",SmartTiles[i].ActionValue);
-            draw_tile(tilenamebuffer,600,1000 - (smarty*120) - 25);
-          }else if(SmartTiles[i].Action == 1)
-          {
-            sprintf(textbuffer,"%s",Areas[SmartTiles[i].ActionValue].name);
+            sprintf(textbuffer,"Event %d",SmartTiles[i].ActionValue);
             draw_spritetext(textbuffer,600,1000 - (smarty*120));
           }
         }
