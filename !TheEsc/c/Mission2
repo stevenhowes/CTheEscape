@@ -83,9 +83,9 @@ struct SmartTile_s SmartTiles[SMARTTILES];
 
 struct EventAction_s {
   int Event;
-  unsigned char Action;         //0=change tile     /    1=change area    /   2=sound     / 3=rearm
-  unsigned char ActionValue;    //tile sprite no.   /    area ID          /   sound ID    / na
-  int ActionTarget;             //tile ID           /    n/a              /   channel ID  / eventid
+  unsigned char Action;         //0=change tile     / 1=change area    / 2=sound     / 3=rearm    / 4=schedule
+  unsigned char ActionValue;    //tile sprite no.   / area ID          / sound ID    / na         / eventid
+  int ActionTarget;             //tile ID           / n/a              / channel ID  / eventid    / ticks
 };
 struct EventAction_s EventActions[MAXEVENTACTIONS];
 
@@ -96,6 +96,13 @@ struct Event_s {
   int NextRearm;
 };
 struct Event_s Events[MAXEVENTS];
+
+struct ScheduledEvent_s {
+  int Event;
+  int Ticks;
+};
+struct ScheduledEvent_s ScheduledEvents[MAXEVENTS];
+
 
 void game2_saveevents(char* filename)
 {
@@ -133,6 +140,10 @@ void game2_loadevents(char* filename)
     Events[i].Triggered = 1;
     Events[i].RearmDelay = -1;
     Events[i].NextRearm = -1;
+
+    // We can populate these here as we use MAXEVENTS for both
+    ScheduledEvents[i].Event = -1;
+    ScheduledEvents[i].Ticks = -1;
   }
 
   // Attempt to get file info
@@ -578,6 +589,29 @@ void game2_tick_input()
   }
 }
 
+int game2_newevent()
+{
+  int i;
+  int freeid = -1;
+  
+  for(i = 0; i<MAXEVENTS; i++)
+  {
+    if(ScheduledEvents[i].Event < 0)
+    {
+      freeid = i;
+      i = MAXEVENTS;
+    }
+  }
+
+  if(freeid < 0)
+  {
+    while(1)
+    printf("No free slots in event scheduler!\n");
+  }
+
+  return freeid;
+}
+
 void game2_triggerevent(int id)
 {
   int i;
@@ -616,12 +650,34 @@ void game2_triggerevent(int id)
         sound_pcm_playsample_ifidle(EventActions[i].ActionTarget,EventActions[i].ActionValue);
       else if(EventActions[i].Action == 3)    // Re-arm
         Events[EventActions[i].ActionTarget].Triggered = 0;
-
+      else if(EventActions[i].Action == 4)    // Schedule Event
+      {
+        int scheduleid = game2_newevent();
+        ScheduledEvents[scheduleid].Event = EventActions[i].ActionValue;
+        ScheduledEvents[scheduleid].Ticks = tick + EventActions[i].ActionTarget;
+      }
     }
   }
-  
+}
 
+void game2_triggerscheduledevents()
+{
+  int i;
+  for(i = 0; i<MAXEVENTS; i++)
+  {
+    if(ScheduledEvents[i].Event > 0)
+    {
+      if(tick > ScheduledEvents[i].Ticks)
+      {
+        // Trigger the event
+        game2_triggerevent(ScheduledEvents[i].Event);
 
+        // Clear it
+        ScheduledEvents[i].Event = -1;
+        ScheduledEvents[i].Ticks = -1;
+      }
+    }
+  }
 }
 
 int game2_tick()
@@ -702,6 +758,8 @@ int game2_tick()
         }
       }
     }
+
+  game2_triggerscheduledevents();
 
   game2_tick_input();
 

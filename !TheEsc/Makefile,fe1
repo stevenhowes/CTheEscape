@@ -48,8 +48,6 @@ o.Input:	c.Input
 o.Input:	C:h.swis
 o.Input:	C:h.kernel
 o.Input:	C:h.kernel
-o.Intro:	c.Intro
-o.Intro:	h.Graphics
 o.CTheEscape:	c.CTheEscape
 o.CTheEscape:	C:h.swis
 o.CTheEscape:	C:h.kernel
@@ -61,6 +59,8 @@ o.Sound:	C:h.swis
 o.Sound:	C:h.kernel
 o.Sound:	C:h.kernel
 o.Sound:	h.Sound
+o.Intro:	c.Intro
+o.Intro:	h.Graphics
 o.Mission1:	c.Mission1
 o.Mission1:	h.Graphics
 o.Mission1:	h.Sound

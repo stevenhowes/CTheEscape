@@ -12,8 +12,13 @@ AddEvent(6,"CB1-DOORCLOSE",1,-1,-1)
 AddEvent(7,"CB2-DOOROPEN",0,-1,-1)
 AddEvent(8,"CB2-DOORCLOSE",1,-1,-1)
 
+AddEvent(9,"Brief",0,-1,-1)
+
 Event("PlayerStart")
  AreaName(1)
+ Schedule("Brief",200)
+
+Event("Brief")
  Sound(8,4)
 
 Event("SBBR-DOOROPEN")
