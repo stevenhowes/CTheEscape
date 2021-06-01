@@ -57,7 +57,7 @@ function map_decompress($data)
 	return base64_decode($newstring);
 }
 
-$mapdata = file_get_contents("S:\\RiscOSDev\\rpcemu-win32-0.9.3-bundle-371-issue-1\\RPCEmu - 371\\hostfs\\Dev\\!TheEsc\\m2_map,ffd);
+$mapdata = file_get_contents("S:\\RiscOSDev\\rpcemu-win32-0.9.3-bundle-371-issue-1\\RPCEmu - 371\\hostfs\\Dev\\!TheEsc\\m2_map,ffd");
 
 echo "In Raw  " . md5($mapdata). " " . strlen($mapdata). "\n";
 
