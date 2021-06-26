@@ -74,6 +74,17 @@
           $eventactions[] = array("Event"=>$inevent,"Action"=>0,"ActionValue"=>$csv[1],"ActionTarget"=>$csv[0]);
         }
         break;
+      case "SetOverlayTile":
+        if($inevent < 0)
+        {
+          echo "  Invalid outside event\n";
+        }
+        else
+        {
+          $csv = str_getcsv($split[1]);
+          $eventactions[] = array("Event"=>$inevent,"Action"=>5,"ActionValue"=>$csv[1],"ActionTarget"=>$csv[0]);
+        }
+        break;
       case "ReArm":
         if($inevent < 0)
         {

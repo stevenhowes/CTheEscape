@@ -670,6 +670,8 @@ void game2_triggerevent(int id)
         ScheduledEvents[scheduleid].Event = EventActions[i].ActionValue;
         ScheduledEvents[scheduleid].Ticks = tick + EventActions[i].ActionTarget;
       }
+      else if(EventActions[i].Action == 5)         // Change overlay tile sprite
+        fullmap[EventActions[i].ActionTarget + 10000] = EventActions[i].ActionValue;
     }
   }
 }
