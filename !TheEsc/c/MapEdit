@@ -31,6 +31,7 @@ int tick = 0;
 int lasttick = 0;
 extern int screen;
 int clipboard = 0;
+int clipboard_overlay = 0;
 int clipboard_tileid = 0;
 extern void screen_nobuffer();
 unsigned int editsmart = 0;
@@ -524,6 +525,7 @@ void game2_tick_input()
       if(tick > readmodkey)
       {
         clipboard = fullmap[TilePlayer.rawtile];
+        clipboard_overlay = fullmap[TilePlayer.rawtile + 10000];
         clipboard_tileid = TilePlayer.rawtile;
         readmodkey = tick + 10;
       }
@@ -535,7 +537,7 @@ void game2_tick_input()
       if(tick > readmodkey)
       {
         fullmap[TilePlayer.rawtile] = clipboard;
-
+        fullmap[TilePlayer.rawtile + 10000] = clipboard_overlay;
         for(i = 0; i < SMARTTILES; i++)
         {
           if(SmartTiles[i].Tile == clipboard_tileid)
@@ -758,9 +760,17 @@ int game2_tick()
 
     x = 1180;
     y = 750;
-  
-    sprintf(tilenamebuffer,"%i",clipboard);
+
+    if(clipboard > 127)
+      sprintf(tilenamebuffer,"%i",clipboard - 128);
+    else
+      sprintf(tilenamebuffer,"%i",clipboard);
     draw_tile(tilenamebuffer,x,y);
+    if(clipboard_overlay > 0)
+    {
+      sprintf(tilenamebuffer,"%i",clipboard_overlay);
+      draw_tile_trans(tilenamebuffer,x,y);
+    }
     draw_sprite("select1",x,y);
     sprintf(tilenamebuffer,"%i",clipboard_tileid);
     draw_spritetext(tilenamebuffer, x+10, y+30);
