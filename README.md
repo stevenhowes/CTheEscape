@@ -7,11 +7,11 @@ All files are in RiscOS formats, suitable for hostfs on RPCEmu or Arculator. Bin
 
 Tested on:
 
-RPCEmu on Win10 (recompiler) - RiscOS 3.71 on StrongARM with 128MB of RAM, 2MB VRAM
+- RPCEmu on Win10 (recompiler) - RiscOS 3.71 on StrongARM with 128MB of RAM, 2MB VRAM
 
-Arculator 2.0 - RiscOS 3.10 emulating Acorn A3000 with 1MB RAM
+- Arculator 2.0 - RiscOS 3.10 emulating Acorn A3000 with 1MB RAM
 
-Acorn A3000 - RiscOS 3.10 with 2MB RAM
+- Acorn A3000 - RiscOS 3.10 with 2MB RAM
 
 
 Menu controls:
@@ -20,26 +20,27 @@ Menu controls:
 
 
 Mission 1:
--Left Arrow: Left
 
--Right Arrow: Right
+- Left Arrow: Left
 
--Space Bar: Fire phasers
+- Right Arrow: Right
 
--Q: Skip mission (CHEAT)
+- Space Bar: Fire phasers
 
--S: Skip to end sequence with tractor beam (CHEAT)
+- Q: Skip mission (CHEAT)
+
+- S: Skip to end sequence with tractor beam (CHEAT)
 
 
 Mission 2:
 
--Up Arrow: Walk up
+- Up Arrow: Walk up
 
--Down Arrow: Walk down
+- Down Arrow: Walk down
 
--Left Arrow: Walk left
+- Left Arrow: Walk left
 
--Right Arrow: Walk right
+- Right Arrow: Walk right
 
 
 
