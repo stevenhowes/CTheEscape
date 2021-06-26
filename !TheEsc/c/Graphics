@@ -228,6 +228,17 @@ void draw_tile(char* spritename,int x, int y)
   inreg.r[5] = 0;
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
+void draw_tile_trans(char* spritename,int x, int y)
+{
+  // SpriteOp 34 to put sprite at a location
+  inreg.r[0] = 256+34;
+  inreg.r[1] = (int) tilebuffer;
+  inreg.r[2] = (int) spritename;
+  inreg.r[3] = x;
+  inreg.r[4] = y;
+  inreg.r[5] = 8;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+}
 
 void draw_spritetext(char* text, int x, int y)
 {

@@ -21,9 +21,12 @@ extern _kernel_swi_regs outreg;
 // map[0] is the 'master', [1] and [2] represents what is currently
 // believed to be displayed in the corresponding (+1) screen buffer
 // and we run a compare to see if re-drawing is needed. 0xFF is used
-// for a re-draw being required (so it's set on the tile under the player
+// for a re-draw being required (so it's set on the tile under the player)
+// _overlay is used for the second layer on of tiles (optional)
 unsigned char map[3][TILESX][TILESY];
-unsigned char fullmap[10000];
+unsigned char map_overlay[3][TILESX][TILESY];
+
+unsigned char fullmap[10000*2];
 
 unsigned char areaname[13];
 
@@ -364,6 +367,17 @@ void game2_fillmap(int xoffset, int yoffset)
   memcpy(map[0][7],fullmap+yoffset+(xoffset*100)+700,10);
   memcpy(map[0][8],fullmap+yoffset+(xoffset*100)+800,10);
   memcpy(map[0][9],fullmap+yoffset+(xoffset*100)+900,10);
+
+  memcpy(map_overlay[0][0],fullmap+yoffset+(xoffset*100)+10000,10);
+  memcpy(map_overlay[0][1],fullmap+yoffset+(xoffset*100)+100+10000,10);
+  memcpy(map_overlay[0][2],fullmap+yoffset+(xoffset*100)+200+10000,10);
+  memcpy(map_overlay[0][3],fullmap+yoffset+(xoffset*100)+300+10000,10);
+  memcpy(map_overlay[0][4],fullmap+yoffset+(xoffset*100)+400+10000,10);
+  memcpy(map_overlay[0][5],fullmap+yoffset+(xoffset*100)+500+10000,10);
+  memcpy(map_overlay[0][6],fullmap+yoffset+(xoffset*100)+600+10000,10);
+  memcpy(map_overlay[0][7],fullmap+yoffset+(xoffset*100)+700+10000,10);
+  memcpy(map_overlay[0][8],fullmap+yoffset+(xoffset*100)+800+10000,10);
+  memcpy(map_overlay[0][9],fullmap+yoffset+(xoffset*100)+900+10000,10);
 }
 
 void game2_setup_audio()
@@ -730,7 +744,7 @@ int game2_tick()
         }
 
         // Redraw any tiles we're overlapping
-        if(map[0][x][y] ^ map[screen+1][x][y])
+        if((map[0][x][y] ^ map[screen+1][x][y]) || (map_overlay[0][x][y] ^ map_overlay[screen+1][x][y]))
         {
           map[screen+1][x][y] = map[0][x][y];
           if(map[screen+1][x][y] < 128)
@@ -739,6 +753,13 @@ int game2_tick()
             sprintf(tilenamebuffer,"%i",(map[screen+1][x][y]-128));
 
           draw_tile(tilenamebuffer,x*100,y*100);
+
+          map_overlay[screen+1][x][y] = map_overlay[0][x][y];
+          if(map_overlay[screen+1][x][y] > 0)
+          {
+            sprintf(tilenamebuffer,"%i",map_overlay[screen+1][x][y]);
+            draw_tile_trans(tilenamebuffer,x*100,y*100);
+          }
         }
       }
     }

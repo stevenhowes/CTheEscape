@@ -39,8 +39,11 @@ int selectedsmart = -1;
 // believed to be displayed in the corresponding (+1) screen buffer
 // and we run a compare to see if re-drawing is needed. 0xFF is used
 // for a re-draw being required (so it's set on the tile under the player
+// _overlay is used for the second layer on of tiles (optional)
 unsigned char map[3][TILESX][TILESY];
-unsigned char fullmap[10000];
+unsigned char map_overlay[3][TILESX][TILESY];
+
+unsigned char fullmap[10000*2];
 
 char tilenamebuffer[4];
 char textbuffer[63];
@@ -267,6 +270,17 @@ void game2_fillmap(int xoffset, int yoffset)
   memcpy(map[0][7],fullmap+yoffset+(xoffset*100)+700,10);
   memcpy(map[0][8],fullmap+yoffset+(xoffset*100)+800,10);
   memcpy(map[0][9],fullmap+yoffset+(xoffset*100)+900,10);
+
+  memcpy(map_overlay[0][0],fullmap+yoffset+(xoffset*100)+10000,10);
+  memcpy(map_overlay[0][1],fullmap+yoffset+(xoffset*100)+100+10000,10);
+  memcpy(map_overlay[0][2],fullmap+yoffset+(xoffset*100)+200+10000,10);
+  memcpy(map_overlay[0][3],fullmap+yoffset+(xoffset*100)+300+10000,10);
+  memcpy(map_overlay[0][4],fullmap+yoffset+(xoffset*100)+400+10000,10);
+  memcpy(map_overlay[0][5],fullmap+yoffset+(xoffset*100)+500+10000,10);
+  memcpy(map_overlay[0][6],fullmap+yoffset+(xoffset*100)+600+10000,10);
+  memcpy(map_overlay[0][7],fullmap+yoffset+(xoffset*100)+700+10000,10);
+  memcpy(map_overlay[0][8],fullmap+yoffset+(xoffset*100)+800+10000,10);
+  memcpy(map_overlay[0][9],fullmap+yoffset+(xoffset*100)+900+10000,10);
 }
 
 void game2_setup()
@@ -484,6 +498,26 @@ void game2_tick_input()
       }
     }
 
+    // L - next tile
+    if(input_readkey(86))
+    {
+      if(tick > readmodkey)
+      {
+        fullmap[TilePlayer.rawtile + 10000] = fullmap[TilePlayer.rawtile + 10000] + 1;
+        readmodkey = tick + 10;
+      }
+    }
+
+    // K - previous tile
+    if(input_readkey(70))
+    {
+      if(tick > readmodkey)
+      {
+        fullmap[TilePlayer.rawtile + 10000] = fullmap[TilePlayer.rawtile + 10000] - 1;
+        readmodkey = tick + 10;
+      }
+    }
+    
     // C - Copy tile
     if(input_readkey(82))
     {
@@ -578,6 +612,14 @@ int game2_tick()
           {
           draw_sprite("solid",x*100,y*100);
           }
+
+          map_overlay[screen+1][x][y] = map_overlay[0][x][y];
+          if(map_overlay[screen+1][x][y] > 0)
+          {
+            sprintf(tilenamebuffer,"%i",map_overlay[screen+1][x][y]);
+            draw_tile_trans(tilenamebuffer,x*100,y*100);
+          }
+
           udt++;
         }
         
@@ -666,24 +708,53 @@ int game2_tick()
 
     game2_tick_input();
 
-    x = 1100;
+    x = 1040;
     y = 600;
 
+    // Tile selector (primary)
     for(i = (fullmap[TilePlayer.rawtile] - 3); i <= (fullmap[TilePlayer.rawtile] + 3); i++)
     {
       if((i >=0) && (i <= 255))
       {
-        sprintf(tilenamebuffer,"%i",i);
+        if(i > 127)
+          sprintf(tilenamebuffer,"%i",i - 128);
+        else
+          sprintf(tilenamebuffer,"%i",i);
+
         draw_tile(tilenamebuffer,x,y);
       
-        sprintf(textbuffer,"%d",i);
-        draw_spritetext(textbuffer, x-60, y+30);
+        if(i > 127)
+          sprintf(textbuffer,"%i",i - 128);
+        else
+          sprintf(textbuffer,"%i",i);
+        draw_spritetext(textbuffer, x+20, y+30);
     
         if(i == fullmap[TilePlayer.rawtile])
           draw_sprite("select1",x,y);
       }
       y = y - 100;
     }
+
+    x = 1160;
+    y = 600;
+
+    // Tile selector (overlay)
+    for(i = (fullmap[TilePlayer.rawtile + 10000] - 3); i <= (fullmap[TilePlayer.rawtile + 10000] + 3); i++)
+    {
+      if((i >=0) && (i <= 255))
+      {
+        sprintf(tilenamebuffer,"%i",i);
+        draw_tile(tilenamebuffer,x,y);
+      
+        sprintf(textbuffer,"%i",i);
+        draw_spritetext(textbuffer, x+20, y+30);
+    
+        if(i == fullmap[TilePlayer.rawtile + 10000])
+          draw_sprite("select1",x,y);
+      }
+      y = y - 100;
+    }
+
 
     x = 1180;
     y = 750;
