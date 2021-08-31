@@ -608,15 +608,16 @@ int game2_tick()
         {
           map[screen+1][x][y] = map[0][x][y];
           draw_tile(map[screen+1][x][y] & 127,x*100,y*100);
-          if(((map[screen+1][x][y] >> 7)  & 0x01))
-          {
-          draw_sprite("solid",x*100,y*100);
-          }
 
           map_overlay[screen+1][x][y] = map_overlay[0][x][y];
           if(map_overlay[screen+1][x][y] > 0)
           {
             draw_tile_trans(map_overlay[screen+1][x][y],x*100,y*100);
+          }
+
+          if(((map[screen+1][x][y] >> 7)  & 0x01))
+          {
+          draw_sprite("solid",x*100,y*100);
           }
 
           udt++;
