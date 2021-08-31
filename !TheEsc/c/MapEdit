@@ -594,8 +594,8 @@ int game2_tick()
   lasttick = tick;
   tick = clock();
 
-  //screen_flipbuffer();
-screen_nobuffer();
+  screen_flipbuffer();
+
   if(1)
   {
     screen_clear();
