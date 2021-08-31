@@ -383,6 +383,8 @@ void game2_setup_audio()
 {
   sound_pcm_loadsample(PCMSAMPLE_HAIL,"sounds.commbdg");
   sound_pcm_loadsample(PCMSAMPLE_DOOR,"sounds.door");
+  sound_pcm_loadsample(PCMSAMPLE_ALERT,"sounds.alert");
+
 }
 
 void game2_setup()
