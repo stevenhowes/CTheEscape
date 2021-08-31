@@ -46,8 +46,7 @@ unsigned char map_overlay[3][TILESX][TILESY];
 
 unsigned char fullmap[10000*2];
 
-char tilenamebuffer[4];
-char textbuffer[63];
+char textbuffer[128];
 
 struct EntityLocation_s {
   short signed int X,Y;
@@ -595,8 +594,8 @@ int game2_tick()
   lasttick = tick;
   tick = clock();
 
-  screen_flipbuffer();
-
+  //screen_flipbuffer();
+screen_nobuffer();
   if(1)
   {
     screen_clear();
@@ -608,8 +607,7 @@ int game2_tick()
         if(1/*map[0][x][y] ^ map[screen+1][x][y]*/)
         {
           map[screen+1][x][y] = map[0][x][y];
-          sprintf(tilenamebuffer,"%i",map[screen+1][x][y] & 127);
-          draw_tile(tilenamebuffer,x*100,y*100);
+          draw_tile(map[screen+1][x][y] & 127,x*100,y*100);
           if(((map[screen+1][x][y] >> 7)  & 0x01))
           {
           draw_sprite("solid",x*100,y*100);
@@ -618,8 +616,7 @@ int game2_tick()
           map_overlay[screen+1][x][y] = map_overlay[0][x][y];
           if(map_overlay[screen+1][x][y] > 0)
           {
-            sprintf(tilenamebuffer,"%i",map_overlay[screen+1][x][y]);
-            draw_tile_trans(tilenamebuffer,x*100,y*100);
+            draw_tile_trans(map_overlay[screen+1][x][y],x*100,y*100);
           }
 
           udt++;
@@ -701,7 +698,7 @@ int game2_tick()
       }
     }
 
-    sprintf(textbuffer,"Tile:%i\nSprite:%i\nSolid: %i",
+    sprintf(textbuffer,"Tile:%i\nSprite:%i\nSolid: %i\n",
         TilePlayer.rawtile,
         fullmap[TilePlayer.rawtile],
         ((fullmap[TilePlayer.rawtile] >> 7)  & 0x01)
@@ -719,11 +716,11 @@ int game2_tick()
       if((i >=0) && (i <= 255))
       {
         if(i > 127)
-          sprintf(tilenamebuffer,"%i",i - 128);
+          draw_tile(i - 128,x,y);
         else
-          sprintf(tilenamebuffer,"%i",i);
+          draw_tile(i,x,y);
 
-        draw_tile(tilenamebuffer,x,y);
+
       
         if(i > 127)
           sprintf(textbuffer,"%i",i - 128);
@@ -745,8 +742,7 @@ int game2_tick()
     {
       if((i >=0) && (i <= 255))
       {
-        sprintf(tilenamebuffer,"%i",i);
-        draw_tile(tilenamebuffer,x,y);
+        draw_tile(i,x,y);
       
         sprintf(textbuffer,"%i",i);
         draw_spritetext(textbuffer, x+20, y+30);
@@ -756,26 +752,25 @@ int game2_tick()
       }
       y = y - 100;
     }
-
+/*
 
     x = 1180;
     y = 750;
 
     if(clipboard > 127)
-      sprintf(tilenamebuffer,"%i",clipboard - 128);
+      draw_tile(clipboard - 128,x,y);
     else
-      sprintf(tilenamebuffer,"%i",clipboard);
-    draw_tile(tilenamebuffer,x,y);
+      draw_tile(clipboard,x,y);
+  
     if(clipboard_overlay > 0)
     {
-      sprintf(tilenamebuffer,"%i",clipboard_overlay);
-      draw_tile_trans(tilenamebuffer,x,y);
+      draw_tile_trans(clipboard_overlay,x,y);
     }
     draw_sprite("select1",x,y);
-    sprintf(tilenamebuffer,"%i",clipboard_tileid);
-    draw_spritetext(tilenamebuffer, x+10, y+30);
+    sprintf(textbuffer,"%i",clipboard_tileid);
+    draw_spritetext(textbuffer, x+10, y+30);
     draw_spritetext("Clipboard", x-174, y+30);
-    
+    */
     
     return 0;
   }else{
@@ -798,14 +793,14 @@ int game_hitbox_collide(int x1, int y1, int w1, int h1, int x2, int y2, int w2, 
 }
 
 void exitfunc () {
-  screen_flipbuffer();
+/*  screen_flipbuffer();
   screen_clear();
   screen_flipbuffer();
   screen_clear();
   screen_nobuffer();
   free(buffer);
   free(fontbuffer);
-  free(tilebuffer);
+  free(tilebuffer);*/
 }
 
 int main(int argc, char *argv[])

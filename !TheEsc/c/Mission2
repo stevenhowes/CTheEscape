@@ -30,7 +30,6 @@ unsigned char fullmap[10000*2];
 
 unsigned char areaname[13];
 
-char tilenamebuffer[4];
 char textbuffer[63];
 
 struct EntityLocation_s {
@@ -750,17 +749,14 @@ int game2_tick()
         {
           map[screen+1][x][y] = map[0][x][y];
           if(map[screen+1][x][y] < 128)
-            sprintf(tilenamebuffer,"%i",map[screen+1][x][y]);
+            draw_tile(map[screen+1][x][y],x*100,y*100);
           else
-            sprintf(tilenamebuffer,"%i",(map[screen+1][x][y]-128));
-
-          draw_tile(tilenamebuffer,x*100,y*100);
+            draw_tile((map[screen+1][x][y]-128),x*100,y*100);
 
           map_overlay[screen+1][x][y] = map_overlay[0][x][y];
           if(map_overlay[screen+1][x][y] > 0)
           {
-            sprintf(tilenamebuffer,"%i",map_overlay[screen+1][x][y]);
-            draw_tile_trans(tilenamebuffer,x*100,y*100);
+            draw_tile_trans(map_overlay[screen+1][x][y],x*100,y*100);
           }
         }
       }

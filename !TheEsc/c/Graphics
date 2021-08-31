@@ -10,7 +10,12 @@ extern unsigned char *buffer;
 extern unsigned char *fontbuffer;
 extern unsigned char *tilebuffer;
 
+char tilenamebuffer[4];
+char letternamebuffer[2];
+
 int screen = 1;
+int tilecache[256];
+int lettercache[256];
 
 extern void screen_nobuffer();
 // Loads sprite file into buffer
@@ -205,35 +210,86 @@ void draw_sprite_flippedv(char* spritename,int x, int y)
 
 }
 
-void draw_letter(char* spritename,int x, int y)
+int get_letter_address(int letternumber)
 {
-  // SpriteOp 34 to put sprite at a location
-  inreg.r[0] = 256+34;
+  if(lettercache[letternumber] > 0)
+     return lettercache[letternumber];
+
+  sprintf(letternamebuffer,"%c",letternumber);
+  inreg.r[0] = 256+24;
   inreg.r[1] = (int) fontbuffer;
-  inreg.r[2] = (int) spritename;
+  inreg.r[2] = (int) letternamebuffer;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+  // For now, if we get an invalid character just display an X
+  // to make it really obvious
+  if(outreg.r[2] == inreg.r[2])
+    get_letter_address((int)'X');
+
+  lettercache[letternumber] = outreg.r[2];
+
+  return lettercache[letternumber];
+}
+
+void draw_letter(int letter,int x, int y)
+{
+  int address = get_letter_address(letter);
+  // SpriteOp 34 to put sprite at a location
+  inreg.r[0] = 512+34;
+  inreg.r[1] = (int) fontbuffer;
+  inreg.r[2] = address;
   inreg.r[3] = x;
   inreg.r[4] = y;
   inreg.r[5] = 8;
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
 
-void draw_tile(char* spritename,int x, int y)
+int get_tile_address(int tilenumber)
 {
-  // SpriteOp 34 to put sprite at a location
-  inreg.r[0] = 256+34;
+  if(tilecache[tilenumber] > 0)
+     return tilecache[tilenumber];
+
+  sprintf(tilenamebuffer,"%i",tilenumber);
+  inreg.r[0] = 256+24;
   inreg.r[1] = (int) tilebuffer;
-  inreg.r[2] = (int) spritename;
+  inreg.r[2] = (int)tilenamebuffer;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+  // Show default tile if not found
+  if(outreg.r[2] == inreg.r[2])
+  {
+    get_tile_address(0);
+  }
+
+  // Caching 0 seems to make it shit itself?
+  if(tilenumber > 0)
+    tilecache[tilenumber] = outreg.r[2];
+
+  return outreg.r[2];
+}
+
+void draw_tile(int tilenumber,int x, int y)
+{
+  int address = get_tile_address(tilenumber);
+
+  // SpriteOp 34 to put sprite at a location
+  inreg.r[0] = 512+34;
+  inreg.r[1] = (int) tilebuffer; // unused because pointers are in use now
+  inreg.r[2] = address;
   inreg.r[3] = x;
   inreg.r[4] = y;
   inreg.r[5] = 0;
   _kernel_swi(OS_SpriteOp,&inreg,&outreg);
 }
-void draw_tile_trans(char* spritename,int x, int y)
+
+void draw_tile_trans(int tilenumber,int x, int y)
 {
+  int address = get_tile_address(tilenumber);
+
   // SpriteOp 34 to put sprite at a location
-  inreg.r[0] = 256+34;
+  inreg.r[0] = 512+34;
   inreg.r[1] = (int) tilebuffer;
-  inreg.r[2] = (int) spritename;
+  inreg.r[2] = address;
   inreg.r[3] = x;
   inreg.r[4] = y;
   inreg.r[5] = 8;
@@ -245,15 +301,13 @@ void draw_spritetext(char* text, int x, int y)
   int currentx;
   int currenty;
   int i;
-  char str[2] = "\0";
+
   currentx = x;
   currenty = y;
   for(i = 0; i < strlen(text); i++)
   {
-    str[0] = text[i];
-
     if((text[i] != ' ') && (text[i] != '\n') && (text[i] != '~'))
-      draw_letter(str,currentx,currenty);
+      draw_letter(text[i],currentx,currenty);
 
     switch (text[i])
     {
@@ -262,6 +316,7 @@ void draw_spritetext(char* text, int x, int y)
       case '.':
       case ',':
       case 'y':
+      case ':':
         currentx += 12 + 4;
         break;
       case '\'':
