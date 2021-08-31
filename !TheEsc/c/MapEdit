@@ -753,7 +753,7 @@ int game2_tick()
       }
       y = y - 100;
     }
-/*
+
 
     x = 1180;
     y = 750;
@@ -771,7 +771,7 @@ int game2_tick()
     sprintf(textbuffer,"%i",clipboard_tileid);
     draw_spritetext(textbuffer, x+10, y+30);
     draw_spritetext("Clipboard", x-174, y+30);
-    */
+    
     
     return 0;
   }else{
