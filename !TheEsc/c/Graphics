@@ -132,6 +132,35 @@ void draw_rectangle(int x1,int y1,int x2,int y2)
   draw_line(x2,y2,x1,y2);
 }
 
+int get_sprite_address(char* spritename)
+{
+  inreg.r[0] = 256+24;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = (int) spritename;
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+
+  if(outreg.r[2] == inreg.r[2])
+    outreg.r[2] = 0;
+
+  return outreg.r[2];
+}
+
+void draw_sprite_pointer(int pointer,int x, int y)
+{
+  // Unable to look up address (or never tried)
+  if(pointer == 0)
+    return;
+
+  // SpriteOp 34 to put sprite at a location
+  inreg.r[0] = 512+34;
+  inreg.r[1] = (int) buffer;
+  inreg.r[2] = pointer;
+  inreg.r[3] = x;
+  inreg.r[4] = y;
+  inreg.r[5] = 8; // GCOL dest=source and sprite mask
+  _kernel_swi(OS_SpriteOp,&inreg,&outreg);
+}
+
 void draw_sprite(char* spritename,int x, int y)
 {
   // SpriteOp 34 to put sprite at a location

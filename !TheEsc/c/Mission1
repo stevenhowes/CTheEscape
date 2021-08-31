@@ -17,8 +17,9 @@ extern sound_composition_load(char *filename);
 extern _kernel_swi_regs inreg;
 extern _kernel_swi_regs outreg;
 
-enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_end,photon1,photon2,plasma1,plasma2};
-char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2","plasma1","plasma2"};
+enum sprite_e{player_ship, durno_ship, ship_trgt, durno_ship2, ship2_trgt, player_shipl,player_shipr,explode_start,explode_shp2,explode_shp3,explode_end,photon1,photon2,plasma1,plasma2,lcars,pointer,commspan1,maxsprites};
+char *sprites[] = {"player_ship","durno_ship","ship_trgt","durno_ship2","ship2_trgt","player_shipl","player_shipr","explode_shp1","explode_shp2","explode_shp3","explode_shp4","photon1","photon2","plasma1","plasma2","lcars","pointer","commspan1"};
+int spritepointer[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 char hudbuffer[63];
 
@@ -163,7 +164,7 @@ void game_spawn_projectile(int id, int Px, int Py, int Vx, int Vy, enum sprite_e
 
 void game_draw_player()
 {
-  draw_sprite(sprites[Player.sprite], Player.location.X, Player.location.Y);
+  draw_sprite_pointer(spritepointer[Player.sprite], Player.location.X, Player.location.Y);
 
   if(debugs[dbhitbox])
   {
@@ -268,13 +269,13 @@ void game_draw_npcs()
     // Don't bother if they are off the screen
     if(NPCS[i].location.Y < DISPLAY_Y)
     {
-      draw_sprite(sprites[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
+      draw_sprite_pointer(spritepointer[NPCS[i].sprite], NPCS[i].location.X, NPCS[i].location.Y);
 
       // Next sprite up in index is the appropriate target icon
       if(Player.targetleft == i)
-        draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+        draw_sprite_pointer(spritepointer[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
       if(Player.targetright == i)
-        draw_sprite(sprites[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
+        draw_sprite_pointer(spritepointer[NPCS[i].sprite + 1], NPCS[i].location.X, NPCS[i].location.Y);
 
       if(tick > NPCS[i].explodenextframe)
       {
@@ -311,7 +312,7 @@ void game_draw_projectiles()
     if(Projectiles[i].active == 0)
       continue;
 
-    draw_sprite(sprites[Projectiles[i].sprite], Projectiles[i].location.X,Projectiles[i].location.Y);
+    draw_sprite_pointer(spritepointer[Projectiles[i].sprite], Projectiles[i].location.X,Projectiles[i].location.Y);
     Projectiles[i].sprite++;
     if(Projectiles[i].sprite > Projectiles[i].spriteend)
       Projectiles[i].sprite = Projectiles[i].spritestart;
@@ -809,17 +810,27 @@ void game_setup_audio()
 }
 void game_draw_hud()
 {
-  draw_sprite("lcars",4,DISPLAY_Y-164);
-  draw_sprite("pointer",141+(Player.shields*2),DISPLAY_Y - 164 + 84);
-  draw_sprite("pointer",141+(Player.integrity*2),DISPLAY_Y - 164 + 44);
-  draw_sprite("pointer",141+(Player.remainingdistance/7500),DISPLAY_Y - 164 + 4);
+  draw_sprite_pointer(spritepointer[lcars],4,DISPLAY_Y-164);
+  draw_sprite_pointer(spritepointer[pointer],141+(Player.shields*2),DISPLAY_Y - 164 + 84);
+  draw_sprite_pointer(spritepointer[pointer],141+(Player.integrity*2),DISPLAY_Y - 164 + 44);
+  draw_sprite_pointer(spritepointer[pointer],141+(Player.remainingdistance/7500),DISPLAY_Y - 164 + 4);
 }
 
+void game_setup_sprites()
+{
+  int i;
+
+  for(i = 0; i < maxsprites ; i++)
+  {
+    spritepointer[i] = get_sprite_address(sprites[i]);
+  }
+}
 void game1_setup()
 {
   game_setup_input();
   game_setup_audio();
   game_setup_stars();
+  game_setup_sprites();
   game_setup_player();
   game_setup_npcs();
   tick = clock();
@@ -1014,7 +1025,7 @@ void game1_victory()
 void game_draw_comms(char* msg)
 {
   // TODO: Need to scale this properly once font/text is final
-  draw_sprite("commspan1",4,DISPLAY_Y-164);
+  draw_sprite_pointer(spritepointer[commspan1],4,DISPLAY_Y-164);
   draw_spritetext(msg, 80, DISPLAY_Y-80);
 }
 
