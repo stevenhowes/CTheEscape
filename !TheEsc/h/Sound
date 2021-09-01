@@ -57,6 +57,7 @@ enum pcmsample_e{
   PCMSAMPLE_DOOR = 5,           /*soundid*/
   PCMSAMPLE_ALERT = 6,          /*soundid*/
   PCMSAMPLE_TRACTOREND = 7,     /*soundid*/
+  PCMSAMPLE_TRANSPORTER = 8,     /*soundid*/
   PCMSAMPLE_MAX
   };
 

@@ -385,6 +385,7 @@ void game2_setup_audio()
   sound_pcm_loadsample(PCMSAMPLE_DOOR,"sounds.door");
   sound_pcm_loadsample(PCMSAMPLE_ALERT,"sounds.alert");
   sound_pcm_loadsample(PCMSAMPLE_TRACTOREND,"sounds.tracend");
+  sound_pcm_loadsample(PCMSAMPLE_TRANSPORTER,"sounds.transp");
 }
 
 void game2_setup()
