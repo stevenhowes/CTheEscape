@@ -662,7 +662,10 @@ void game2_triggerevent(int id)
       else if(EventActions[i].Action == 1)    // Change area name
         sprintf(areaname,"%s",Areas[EventActions[i].ActionValue].name);
       else if(EventActions[i].Action == 2)    // Play sound
-        sound_pcm_playsample_ifidle(EventActions[i].ActionTarget,EventActions[i].ActionValue);
+        if(EventActions[i].ActionTarget == PCMCHANNEL_PLAYER)
+          sound_pcm_playsample(EventActions[i].ActionTarget,EventActions[i].ActionValue);
+        else
+          sound_pcm_playsample_ifidle(EventActions[i].ActionTarget,EventActions[i].ActionValue);
       else if(EventActions[i].Action == 3)    // Re-arm
         Events[EventActions[i].ActionTarget].Triggered = 0;
       else if(EventActions[i].Action == 4)    // Schedule Event

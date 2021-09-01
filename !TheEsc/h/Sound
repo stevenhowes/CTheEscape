@@ -39,8 +39,8 @@
 
 // Formatting is important as compile.php parses this
 enum pcmchannel_e{
-  PCMCHANNEL_UI = 5,            /*channelid*/
   PCMCHANNEL_PLAYER = 5,        /*channelid*/
+  PCMCHANNEL_UI = 6,            /*channelid*/
   PCMCHANNEL_NPC1 = 6,          /*channelid*/
   PCMCHANNEL_NPC2 = 7,          /*channelid*/
   PCMCHANNEL_AMBIENT = 8,       /*channelid*/
