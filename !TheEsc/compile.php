@@ -9,12 +9,11 @@
   foreach(preg_split("/((\r?\n)|(\r\n?))/", $script) as $line)
   {
     $line = trim($line);
+    $commentsplit = preg_split("/\#/",$line);
+    $line = trim($commentsplit[0]);
 
     if(strlen($line) == 0)
-    {
-      $inevent = -1;
       continue;
-    }
 
     $split = preg_split("/\(|\)/",$line);
 
