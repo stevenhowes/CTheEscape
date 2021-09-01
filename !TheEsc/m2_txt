@@ -43,20 +43,21 @@ AddEvent(15,"MESS-AREA",0,-1,-1)
 ###########################################
 AddEvent(16,"REDALERTON",0,-1,-1)
 AddEvent(17,"REDALERTOFF",0,-1,-1)
-
+AddEvent(18,"REDALERTSTOP",0,-1,-1)
+AddEvent(19,"REDALERTSOUND",0,-1,-1)
 
 # Console animation
 ###########################################
-AddEvent(18,"CONSOLE1",0,-1,-1)
-AddEvent(19,"CONSOLE2",0,-1,-1)
+AddEvent(20,"CONSOLE1",0,-1,-1)
+AddEvent(21,"CONSOLE2",0,-1,-1)
 
 
 # Tractor beam events
 ###########################################
-AddEvent(20,"TRAC1",0,-1,-1)
-AddEvent(21,"TRAC2",0,-1,-1)
-AddEvent(22,"TRACOFF",0,-1,-1)
-AddEvent(23,"TRACSOUND",0,-1,-1)
+AddEvent(22,"TRAC1",0,-1,-1)
+AddEvent(23,"TRAC2",0,-1,-1)
+AddEvent(24,"TRACOFF",0,-1,-1)
+AddEvent(25,"TRACSOUND",0,-1,-1)
 
 
 ###############################################################################
@@ -193,7 +194,7 @@ Event("REDALERTON")
  SetOverlayTile(2413,84)
  SetOverlayTile(3113,84)  # Cargo bay two
  SetOverlayTile(3413,84)
- Sound(PCMSAMPLE_ALERT, PCMCHANNEL_AMBIENT)
+ Schedule("REDALERTSOUND",0)
  ReArm("REDALERTON")
 Event("REDALERTOFF")
  Schedule("REDALERTON",125)
@@ -206,6 +207,11 @@ Event("REDALERTOFF")
  SetOverlayTile(3113,83)  # Cargo bay two
  SetOverlayTile(3413,83)
  ReArm("REDALERTOFF")
+Event("REDALERTSOUND")
+ Sound(PCMSAMPLE_ALERT, PCMCHANNEL_AMBIENT)
+ ReArm("REDALERTSOUND")
+Event("REDALERTSTOP")
+ DisArm("REDALERTSOUND")
 
 ###########################################
 # Console animations

@@ -142,6 +142,28 @@
             $eventactions[] = array("Event"=>$inevent,"Action"=>3,"ActionValue"=>255,"ActionTarget"=>$target);
         }
         break;
+      case "DisArm":
+        if($inevent < 0)
+        {
+          echo "  Invalid outside event\n";
+        }
+        else
+        {
+          $csv = str_getcsv($split[1]);
+
+          $target = -1;
+          foreach($events as $eventid=>$event)
+          {
+            if($event['Name'] == $csv[0])
+              $target = $eventid;
+          }
+
+          if($target < 0)
+            echo "  Unknown target: " . $csv[0] . "\n";
+          else
+            $eventactions[] = array("Event"=>$inevent,"Action"=>6,"ActionValue"=>255,"ActionTarget"=>$target);
+        }
+        break;
       case "Schedule":
         if($inevent < 0)
         {

@@ -676,6 +676,8 @@ void game2_triggerevent(int id)
       }
       else if(EventActions[i].Action == 5)         // Change overlay tile sprite
         fullmap[EventActions[i].ActionTarget + 10000] = EventActions[i].ActionValue;
+      else if(EventActions[i].Action == 6)    // Dis-arm
+        Events[EventActions[i].ActionTarget].Triggered = 1;
     }
   }
 }
