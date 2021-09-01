@@ -59,6 +59,15 @@ AddEvent(23,"TRAC2",0,-1,-1)
 AddEvent(24,"TRACOFF",0,-1,-1)
 AddEvent(25,"TRACSOUND",0,-1,-1)
 
+# Cargo Transporter Effect
+###########################################
+AddEvent(26,"TRANS",0,-1,-1)
+AddEvent(27,"TRANS1",0,-1,-1)
+AddEvent(28,"TRANS2",0,-1,-1)
+AddEvent(29,"TRANS3",0,-1,-1)
+AddEvent(30,"TRANS4",0,-1,-1)
+AddEvent(31,"TRANS5",0,-1,-1)
+AddEvent(32,"TRANS6",0,-1,-1)
 
 ###############################################################################
 
@@ -249,3 +258,32 @@ Event("TRACOFF")
 Event("TRACSOUND")
  Sound(PCMSAMPLE_TRACTOREND, PCMCHANNEL_PLAYER)
  ReArm("TRACSOUND")
+
+
+Event("TRANS")
+ Sound(PCMSAMPLE_TRANSPORTER, PCMCHANNEL_PLAYER)
+ Schedule("TRANS1",10)
+ Schedule("TRANS2",20)
+ Schedule("TRANS3",30)
+ Schedule("TRANS4",40)
+ Schedule("TRANS5",50)
+ Schedule("TRANS6",60)
+
+Event("TRANS1")
+ SetOverlayTile(3101,93)
+ SetOverlayTile(3804,97)
+Event("TRANS2")
+ SetOverlayTile(3101,94)
+ SetOverlayTile(3804,96)
+Event("TRANS3")
+ SetOverlayTile(3101,95)
+ SetOverlayTile(3804,95)
+Event("TRANS4")
+ SetOverlayTile(3101,96)
+ SetOverlayTile(3804,94)
+Event("TRANS5")
+ SetOverlayTile(3101,97)
+ SetOverlayTile(3804,93)
+Event("TRANS6")
+ SetOverlayTile(3101,0)
+  SetOverlayTile(3804,52)
