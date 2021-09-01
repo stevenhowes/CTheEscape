@@ -39,7 +39,7 @@ void load_sprites(char* filename, unsigned char **buffername)
   }
 
   // Stops us trying to mallocsomething mad if file is too big.
-  if(length > 200000)
+  if(length > 250000)
   {
     screen_nobuffer();
     printf("Sprite file %s seems unreasonably large at %i bytes, object type is %i\n",filename, length, outreg.r[0]);
