@@ -1,4 +1,22 @@
 <?php
+  // Parse h/sounds to get friendly names for samples and channels
+  $soundnames = array();
+  $channelnames = array();
+  $sound_h = file_get_contents("h/Sound");
+  foreach(preg_split("/((\r?\n)|(\r\n?))/", $sound_h) as $line)
+  {
+    if(strpos($line,"/*soundid*/"))
+    {
+      $soundsplit = preg_split("/=|\,/",$line);
+      $soundnames[trim($soundsplit[0])] = trim($soundsplit[1]);
+    }
+    if(strpos($line,"/*channelid*/"))
+    {
+      $soundsplit = preg_split("/=|\,/",$line);
+      $channelnames[trim($soundsplit[0])] = trim($soundsplit[1]);
+    }
+  }
+
   $script = file_get_contents("m2_txt");
 
   $inevent = -1;
@@ -59,7 +77,25 @@
         else
         {
           $csv = str_getcsv($split[1]);
-          $eventactions[] = array("Event"=>$inevent,"Action"=>2,"ActionValue"=>$csv[1],"ActionTarget"=>$csv[0]);
+          $csv[0] = trim($csv[0]);
+          $csv[1] = trim($csv[1]);
+
+          if(isset($soundnames[$csv[0]]))
+              $csv[0] = $soundnames[$csv[0]];
+          if(!is_numeric($csv[0]))
+          {
+            echo "Sound '" . $csv[0] . "' not recognised\n";
+            die();
+          }
+
+          if(isset($channelnames[$csv[1]]))
+              $csv[1] = $channelnames[$csv[1]];
+          if(!is_numeric($csv[1]))
+          {
+            echo "Channel '" . $csv[1] . "' not recognised\n";
+            die();
+          }
+          $eventactions[] = array("Event"=>$inevent,"Action"=>2,"ActionValue"=>$csv[0],"ActionTarget"=>$csv[1]);
         }
         break;
       case "SetTile":

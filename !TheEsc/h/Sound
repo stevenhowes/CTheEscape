@@ -37,14 +37,28 @@
 #define DataVox_AdjustMemory            0x443A2
 #define DataVox_SetInternalPitch        0x443A3
 
+// Formatting is important as compile.php parses this
 enum pcmchannel_e{
-  PCMCHANNEL_UI = 5, 
-  PCMCHANNEL_PLAYER = 5, 
-  PCMCHANNEL_NPC1 = 6, 
-  PCMCHANNEL_NPC2 = 7, 
-  PCMCHANNEL_AMBIENT = 8
+  PCMCHANNEL_UI = 5,            /*channelid*/
+  PCMCHANNEL_PLAYER = 5,        /*channelid*/
+  PCMCHANNEL_NPC1 = 6,          /*channelid*/
+  PCMCHANNEL_NPC2 = 7,          /*channelid*/
+  PCMCHANNEL_AMBIENT = 8,       /*channelid*/
+  PCMCHANNEL_MAX
   };
-enum pcmsample_e{PCMSAMPLE_DURNOTORPEDO, PCMSAMPLE_PHASER, PCMSAMPLE_SHIPEXPLODE, PCMSAMPLE_TRACTOR, PCMSAMPLE_HAIL, PCMSAMPLE_DOOR, PCMSAMPLE_ALERT, PCMSAMPLE_TRACTOREND, PCMSAMPLE_MAX};
+
+// Formatting is important as compile.php parses this
+enum pcmsample_e{
+  PCMSAMPLE_DURNOTORPEDO = 0,   /*soundid*/
+  PCMSAMPLE_PHASER = 1,         /*soundid*/
+  PCMSAMPLE_SHIPEXPLODE = 2,    /*soundid*/
+  PCMSAMPLE_TRACTOR = 3,        /*soundid*/
+  PCMSAMPLE_HAIL = 4,           /*soundid*/
+  PCMSAMPLE_DOOR = 5,           /*soundid*/
+  PCMSAMPLE_ALERT = 6,          /*soundid*/
+  PCMSAMPLE_TRACTOREND = 7,     /*soundid*/
+  PCMSAMPLE_MAX
+  };
 
 struct CompositionElement {
   signed short int Start;
